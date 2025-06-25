@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sơ đồ lưu chủng vi khuẩn</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #2c6fbb;
+      --secondary: #4a9d48;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+      --border: #dee2e6;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+    
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    
+    header p {
+      opacity: 0.9;
+      font-size: 1rem;
+    }
+    
+    .security-error {
+      display: none;
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 20px;
+      text-align: center;
+      border-radius: 5px;
+      margin: 20px;
+    }
+    
+    .security-error h2 {
+      margin-bottom: 10px;
+    }
+    
+    .controls {
+      background: var(--light);
+      padding: 15px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .control-group label {
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    select, button {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: white;
+      font-size: 0.95rem;
+    }
+    
+    select {
+      min-width: 180px;
+    }
+    
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    button:hover {
+      background: #1a5a9e;
+      transform: translateY(-2px);
+    }
+    
+    .btn-print {
+      background: var(--secondary);
+    }
+    
+    .btn-print:hover {
+      background: #3d8a3a;
+    }
+    
+    .btn-refresh {
+      background: var(--gray);
+    }
+    
+    .btn-refresh:hover {
+      background: #5a6268;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      padding: 15px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .stat-card {
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      flex: 1;
+      max-width: 200px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card h3 {
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+    }
+    
+    .stat-card p {
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+    
+    .stat-khong { background-color: rgba(139, 195, 74, 0.15); }
+    .stat-da-khang { background-color: rgba(231, 76, 60, 0.15); }
+    .stat-mrsa { background-color: rgba(251, 140, 0, 0.15); }
+    
+    .grid-container {
+      padding: 20px;
+      background: white;
+    }
+    
+    .grid-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .grid-title h2 {
+      font-size: 1.4rem;
+      color: var(--primary);
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .box {
+      position: relative;
+      padding-top: 120%;
+      background: #f0f3f5;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+    
+    .box-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    
+    .box-id {
+      font-weight: bold;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 2px;
+      border-radius: 2px;
+      font-size: 0.7rem;
+    }
+    
+    .box-info {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 3px;
+      border-radius: 3px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .box-info p {
+      margin: 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .box-info p:first-child {
+      font-weight: bold;
+      font-size: 0.6rem;
+    }
+    
+    .box-info p:last-child {
+      font-size: 0.55rem;
+    }
+    
+    .box-status {
+      text-align: center;
+      padding: 2px;
+      font-weight: bold;
+      border-radius: 2px;
+      color: white;
+      font-size: 0.6rem;
+    }
+    
+    .khong { background-color: #8bc34a; }
+    .da-khang { background-color: #e53935; }
+    .mrsa { background-color: #fb8c00; }
+    
+    .chart-container {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+    
+    .chart-container h2 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .chart-wrapper {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      animation: modalFade 0.3s ease;
+    }
+    
+    @keyframes modalFade {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--gray);
+      transition: color 0.3s;
+    }
+    
+    .modal-close:hover {
+      color: var(--danger);
+    }
+    
+    .modal-header {
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .modal-header h3 {
+      color: var(--primary);
+      font-size: 1.4rem;
+    }
+    
+    .modal-body {
+      margin-top: 15px;
+    }
+    
+    .detail-row {
+      display: flex;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--border);
+    }
+    
+    .detail-label {
+      flex: 0 0 140px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .detail-value {
+      flex: 1;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .badge-khong {
+      background-color: #8bc34a;
+      color: white;
+    }
+    
+    .badge-da-khang {
+      background-color: #e53935;
+      color: white;
+    }
+    
+    .badge-mrsa {
+      background-color: #fb8c00;
+      color: white;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 15px;
+      color: var(--gray);
+      font-size: 0.9rem;
+      background: var(--light);
+      border-top: 1px solid var(--border);
+    }
+    
+    @media print {
+      .controls, .stats, .chart-container, footer, button {
+        display: none;
+      }
+      
+      .grid-container {
+        padding: 0;
+      }
+      
+      .grid {
+        gap: 5px;
+      }
+      
+      .box {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      
+      .stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .stat-card {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sơ đồ lưu chủng vi khuẩn</h1>
+      <p>Hệ thống theo dõi và phân tích mẫu vi khuẩn trong phòng thí nghiệm</p>
+    </header>
+    
+    <!-- Thông báo lỗi bảo mật -->
+    <div id="securityError" class="security-error">
+      <h2><i class="fas fa-lock"></i> Lỗi bảo mật</h2>
+      <p>Bạn không có quyền truy cập trang này. Vui lòng sử dụng liên kết chính xác.</p>
+    </div>
+    
+    <!-- Nội dung chính (ban đầu ẩn) -->
+    <div id="mainContent" style="display: none;">
+      <div class="controls">
+        <div class="control-group">
+          <label for="groupSelect"><i class="fas fa-vial"></i> Nhóm hộp:</label>
+          <select id="groupSelect">
+            <option value="all">Tất cả</option>
+          </select>
+        </div>
+        
+        <div class="control-buttons">
+          <button id="refreshBtn" class="btn-refresh">
+            <i class="fas fa-sync-alt"></i> Làm mới
+          </button>
+          <button id="printBtn" class="btn-print">
+            <i class="fas fa-print"></i> In bảng
+          </button>
+        </div>
+      </div>
+      
+      <div class="stats">
+        <div class="stat-card stat-khong">
+          <h3 id="countKhong">0</h3>
+          <p>Không kháng</p>
+        </div>
+        <div class="stat-card stat-da-khang">
+          <h3 id="countDaKhang">0</h3>
+          <p>Đa kháng</p>
+        </div>
+        <div class="stat-card stat-mrsa">
+          <h3 id="countMrsa">0</h3>
+          <p>MRSA</p>
+        </div>
+      </div>
+      
+      <div class="grid-container">
+        <div class="grid-title">
+          <h2><i class="fas fa-th"></i> Sơ đồ lưu chủng</h2>
+          <div id="sampleCount">Hiển thị 0 mẫu</div>
+        </div>
+        <div id="grid" class="grid"></div>
+      </div>
+      
+      <div class="chart-container">
+        <h2><i class="fas fa-chart-pie"></i> Thống kê tình trạng kháng khuẩn</h2>
+        <div class="chart-wrapper">
+          <canvas id="resistanceChart"></canvas>
+        </div>
+      </div>
+      
+      <footer>
+        <p>Hệ thống quản lý mẫu vi khuẩn &copy; 2023 - Phòng thí nghiệm Vi sinh</p>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal chi tiết -->
+  <div id="detailModal" class="modal">
+    <div class="modal-content">
+      <span id="modalClose" class="modal-close">&times;</span>
+      <div class="modal-header">
+        <h3 id="modalTitle">Chi tiết mẫu vi khuẩn</h3>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <div class="detail-row">
+          <div class="detail-label">Mã bệnh phẩm:</div>
+          <div class="detail-value" id="detailMaBenhPham">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Tên vi khuẩn:</div>
+          <div class="detail-value" id="detailTenViKhuan">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Kháng MRSA:</div>
+          <div class="detail-value">
+            <span id="detailResistance" class="status-badge">-</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Ngày cấy:</div>
+          <div class="detail-value" id="detailNgayCay">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Loại bệnh phẩm:</div>
+          <div class="detail-value" id="detailLoaiBenhPham">-</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Mã hộp lưu chủng:</div>
+          <div class="detail-value" id="detailMaHop">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // URL kiểm tra mã code
+    const CODE_CHECK_URL = 'https://script.google.com/macros/s/AKfycbzsD2Bre8pApbozaA8vbHoClC2EE125xlnFErd-w7FrPRjGLci7IBfwufAkUvyVXH914A/exec';
+    // URL dữ liệu chính
+    const DATA_URL = 'https://script.google.com/macros/s/AKfycbxzNFP3K3SY9FgSNTpZW_u-Mzgsm8XjR8Ug4P4wRX-WU45fvQg67fB8ovo5xK0f1djx3Q/exec';
+    
+    let rawData = [];
+    let chart = null;
+    let validCode = '';
+
+    // Hàm lấy mã code từ URL
+    function getCodeFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('code');
+    }
+
+    // Hàm kiểm tra mã code hợp lệ
+    async function validateCode() {
+      const urlCode = getCodeFromUrl();
+      
+      if (!urlCode) {
+        showSecurityError();
+        return false;
+      }
+      
+      try {
+        const response = await fetch(CODE_CHECK_URL);
+        const data = await response.json();
+        
+        // Kiểm tra xem code từ URL có khớp với code trong JSON không
+        if (Array.isArray(data) && data.length > 0 && data[0].code === urlCode) {
+          validCode = urlCode;
+          return true;
+        } else {
+          showSecurityError();
+          return false;
+        }
+      } catch (error) {
+        console.error('Lỗi khi kiểm tra mã code:', error);
+        showSecurityError();
+        return false;
+      }
+    }
+
+    // Hiển thị thông báo lỗi bảo mật
+    function showSecurityError() {
+      document.getElementById('securityError').style.display = 'block';
+      document.getElementById('mainContent').style.display = 'none';
+    }
+
+    // Hiển thị nội dung chính
+    function showMainContent() {
+      document.getElementById('securityError').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+    }
+
+    // Lấy dữ liệu từ API (thêm mã code vào URL)
+    async function fetchData() {
+      try {
+        // Thêm mã code vào URL dữ liệu
+        const url = new URL(DATA_URL);
+        url.searchParams.append('code', validCode);
+        
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Lỗi khi tải dữ liệu');
+        
+        rawData = await res.json();
+        populateGroups();
+        renderAll();
+      } catch (error) {
+        console.error('Lỗi khi tải dữ liệu:', error);
+        alert('Không thể tải dữ liệu. Vui lòng thử lại sau.');
+      }
+    }
+    
+    // Điền các nhóm vào dropdown
+    function populateGroups() {
+      const sel = document.getElementById('groupSelect');
+      // Xóa các option cũ (giữ lại option "Tất cả")
+      while (sel.options.length > 1) {
+        sel.remove(1);
+      }
+      
+      // Thêm các nhóm mới
+      const groups = Array.from(new Set(rawData.map(d => d.ma_hop_luu_chung)));
+      groups.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g;
+        sel.appendChild(opt);
+      });
+    }
+    
+    // Render tất cả
+    function renderAll() {
+      const group = document.getElementById('groupSelect').value;
+      const filtered = group === 'all' ? rawData : rawData.filter(d => d.ma_hop_luu_chung === group);
+      
+      renderGrid(filtered);
+      renderChart(filtered);
+      updateStats(filtered);
+      updateSampleCount(filtered.length);
+    }
+    
+    // Render bảng lưới
+    function renderGrid(data) {
+      const container = document.getElementById('grid');
+      container.innerHTML = '';
+      
+      data.forEach(item => {
+        const box = document.createElement('div');
+        box.classList.add('box');
+        
+        // Xác định lớp dựa trên tình trạng kháng
+        const status = item.da_khang_mrsa ? item.da_khang_mrsa.toLowerCase() : '';
+        if (status.includes('mrsa')) box.classList.add('mrsa');
+        else if (status.includes('đa') || status.includes('đạ')) box.classList.add('da-khang');
+        else box.classList.add('khong');
+        
+        // Lấy mã vi khuẩn (phần sau dấu -)
+        let bacteriaCode = 'N/A';
+        if (item.ten_vi_khuan && item.ten_vi_khuan.includes('-')) {
+          bacteriaCode = item.ten_vi_khuan.split('-')[1].trim();
+        }
+        
+        // Lấy loại bệnh phẩm
+        const loaiBenhPham = item.loai_benh_pham || 'N/A';
+        
+        // Tạo nội dung ô
+        box.innerHTML = `
+          <div class="box-content">
+            <div class="box-id">${item.stt_ma_hop || 'N/A'}</div>
+            <div class="box-info">
+              <p>${bacteriaCode}</p>
+              <p>${loaiBenhPham}</p>
+            </div>
+            <div class="box-status">${item.da_khang_mrsa || 'N/A'}</div>
+          </div>
+        `;
+        
+        // Thêm sự kiện click
+        box.addEventListener('click', () => showDetail(item));
+        container.appendChild(box);
+      });
+    }
+    
+    // Format ngày tháng
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      
+      try {
+        // Xử lý nhiều định dạng ngày khác nhau
+        let date;
+        if (dateString.includes('T')) {
+          date = new Date(dateString);
+        } else if (dateString.includes('/')) {
+          const parts = dateString.split('/');
+          if (parts.length === 3) {
+            date = new Date(parts[2], parts[0]-1, parts[1]);
+          }
+        } else {
+          return dateString;
+        }
+        
+        if (date instanceof Date && !isNaN(date)) {
+          return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        }
+        return dateString;
+      } catch (e) {
+        return dateString;
+      }
+    }
+    
+    // Hiển thị chi tiết
+    function showDetail(item) {
+      // Tách tên và mã vi khuẩn
+      let bacteriaName = item.ten_vi_khuan || 'N/A';
+      let bacteriaCode = '';
+      
+      if (bacteriaName.includes('-')) {
+        const parts = bacteriaName.split('-');
+        bacteriaCode = parts[1].trim();
+        bacteriaName = parts[0].trim();
+      }
+      
+      // Đặt tiêu đề modal
+      document.getElementById('modalTitle').textContent = `Chi tiết mẫu ${item.stt_ma_hop || 'N/A'}`;
+      
+      // Đặt các giá trị chi tiết
+      document.getElementById('detailMaBenhPham').textContent = item.ma_benh_pham || 'N/A';
+      document.getElementById('detailTenViKhuan').textContent = bacteriaName;
+      document.getElementById('detailNgayCay').textContent = formatDate(item.ngay_cay);
+      document.getElementById('detailLoaiBenhPham').textContent = item.loai_benh_pham || 'N/A';
+      document.getElementById('detailMaHop').textContent = item.ma_hop_luu_chung || 'N/A';
+      
+      // Đặt trạng thái kháng với badge
+      const resistanceEl = document.getElementById('detailResistance');
+      const resistance = item.da_khang_mrsa || 'N/A';
+      resistanceEl.textContent = resistance;
+      resistanceEl.className = 'status-badge ';
+      
+      if (resistance.includes('Không')) {
+        resistanceEl.classList.add('badge-khong');
+      } else if (resistance.includes('Đa')) {
+        resistanceEl.classList.add('badge-da-khang');
+      } else if (resistance.includes('MRSA')) {
+        resistanceEl.classList.add('badge-mrsa');
+      } else {
+        resistanceEl.className = 'status-badge';
+      }
+      
+      // Hiển thị modal
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+    
+    // Render biểu đồ
+    function renderChart(data) {
+      const counts = {
+        'Không': 0,
+        'Đa kháng': 0,
+        'MRSA': 0
+      };
+      
+      // Đếm số lượng theo từng loại
+      data.forEach(item => {
+        const status = item.da_khang_mrsa || '';
+        if (status.includes('Không')) counts['Không']++;
+        else if (status.includes('Đa')) counts['Đa kháng']++;
+        else if (status.includes('MRSA')) counts['MRSA']++;
+      });
+      
+      const ctx = document.getElementById('resistanceChart').getContext('2d');
+      
+      // Nếu biểu đồ đã tồn tại, hủy nó trước
+      if (chart) {
+        chart.destroy();
+      }
+      
+      // Tạo biểu đồ mới
+      chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Không kháng', 'Đa kháng', 'MRSA'],
+          datasets: [{
+            data: [counts['Không'], counts['Đa kháng'], counts['MRSA']],
+            backgroundColor: [
+              '#8bc34a',
+              '#e53935',
+              '#fb8c00'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                font: {
+                  size: 14
+                }
+              }
+            },
+            tooltip: {
+              bodyFont: {
+                size: 14
+              },
+              titleFont: {
+                size: 16
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Cập nhật thống kê
+    function updateStats(data) {
+      let countKhong = 0;
+      let countDaKhang = 0;
+      let countMrsa = 0;
+      
+      data.forEach(item => {
+        const status = item.da_khang_mrsa || '';
+        if (status.includes('Không')) countKhong++;
+        else if (status.includes('Đa')) countDaKhang++;
+        else if (status.includes('MRSA')) countMrsa++;
+      });
+      
+      document.getElementById('countKhong').textContent = countKhong;
+      document.getElementById('countDaKhang').textContent = countDaKhang;
+      document.getElementById('countMrsa').textContent = countMrsa;
+    }
+    
+    // Cập nhật số lượng mẫu
+    function updateSampleCount(count) {
+      document.getElementById('sampleCount').textContent = `Hiển thị ${count} mẫu`;
+    }
+
+    // Khởi chạy ứng dụng
+    document.addEventListener('DOMContentLoaded', async () => {
+      const isValid = await validateCode();
+      
+      if (isValid) {
+        showMainContent();
+        await fetchData();
+        
+        // Các sự kiện khác
+        document.getElementById('groupSelect').addEventListener('change', renderAll);
+        document.getElementById('refreshBtn').addEventListener('click', fetchData);
+        document.getElementById('printBtn').addEventListener('click', () => window.print());
+        document.getElementById('modalClose').addEventListener('click', () => {
+          document.getElementById('detailModal').style.display = 'none';
+        });
+        
+        window.addEventListener('click', (e) => {
+          if (e.target === document.getElementById('detailModal')) {
+            document.getElementById('detailModal').style.display = 'none';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
