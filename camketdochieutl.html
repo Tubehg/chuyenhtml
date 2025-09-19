@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phiếu Cam Kết Đọc Hiểu Tài Liệu</title>
+  <style>
+    body {
+      font-family: "Times New Roman", Times, serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f5f5f5;
+    }
+
+    .a4-container {
+      width: 21cm;
+      min-height: 29.7cm;
+      padding: 1.5cm;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .left-header h1 {
+      font-size: 16px;
+      margin: 5px 0;
+      text-transform: uppercase;
+      font-weight: normal;
+    }
+
+    .right-header h1 {
+      font-size: 16px;
+      margin: 5px 0;
+      text-transform: uppercase;
+      text-align: center;
+      font-weight: normal;
+    }
+
+    .left-header h2,
+    .right-header h2 {
+      font-size: 14px;
+      font-weight: normal;
+      margin: 5px 0;
+      text-align: center;
+    }
+
+    .center-text {
+      text-align: center;
+      display: block;
+      font-weight: bold;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 20px 0;
+      text-transform: uppercase;
+    }
+
+    .info {
+      margin-bottom: 15px;
+    }
+
+    .content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 60px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th,
+    td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    #docTable td:nth-child(2) {
+      text-align: left;
+    }
+    
+    #docTable td:nth-child(4) {
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    .signature-container {
+      margin-top: 40px;
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 1cm;
+    }
+
+    .signature-block {
+      text-align: center;
+    }
+
+    .signature-block p {
+      margin: 6px 0;
+    }
+
+    .editable-footer {
+      position: absolute;
+      bottom: 0.5cm;
+      left: 1.5cm;
+      right: 1.5cm;
+      display: flex;
+      font-size: 12px;
+      border-top: 1px solid #ccc;
+      padding-top: 5px;
+      justify-content: space-between;
+      background-color: white;
+      z-index: 10;
+    }
+
+    .repeating-print-footer {
+      display: none;
+    }
+
+    .button-group {
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    button,
+    select {
+      padding: 8px 12px;
+      margin: 0 5px 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    button {
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    @media print {
+      body {
+        background-color: white;
+        padding: 0;
+        font-family: "Times New Roman", Times, serif;
+      }
+
+      .button-group {
+        display: none;
+      }
+
+      .a4-container {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        page-break-after: always;
+      }
+
+      .content {
+        margin-bottom: 0;
+      }
+
+      .editable-footer {
+        display: none;
+      }
+
+      .repeating-print-footer {
+        display: flex;
+        position: fixed;
+        bottom: 0.5cm;
+        left: 1.5cm;
+        right: 1.5cm;
+        justify-content: space-between;
+        font-size: 12px;
+        border-top: 1px solid #ccc;
+        padding-top: 5px;
+        background-color: white;
+      }
+      
+      .signature-container {
+        margin-top: 30px;
+      }
+      
+      /* Ẩn các phần tử điều chỉnh khi in */
+      .adjustment-panel {
+        display: none !important;
+      }
+    }
+
+    .adjustment-panel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: white;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      font-family: "Times New Roman", Times, serif;
+    }
+    
+    .adjustment-panel h3 {
+      margin-top: 0;
+      font-size: 14px;
+    }
+    
+    .adjustment-control {
+      margin: 8px 0;
+    }
+    
+    .adjustment-control label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+    
+    .adjustment-control input {
+      width: 60px;
+      padding: 4px;
+      font-family: "Times New Roman", Times, serif;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="button-group">
+    <button onclick="printDocument()">In Phiếu</button>
+    <select id="dateFilter" onchange="filterByDate()">
+      <option value="">-- Lọc theo ngày ban hành --</option>
+    </select>
+    <select id="nameSelect" onchange="updateName()">
+      <option value="">-- Chọn tên --</option>
+      <option>Lý Hoàng Việt</option>
+      <option>Phạm Thùy Linh</option>
+      <option>Phạm Thị Luyến</option>
+      <option>Nguyễn Thị Hoài Linh</option>
+      <option>Bùi Thị Hải Bình</option>
+      <option>Lê Hữu Tú</option>
+      <option>Mai Thị Hồng Sâm</option>
+      <option>Đào Phương Nam</option>
+    </select>
+    <button onclick="loadData()">Làm mới dữ liệu</button>
+    <button onclick="toggleAdjustmentPanel()">Hiệu chỉnh</button>
+  </div>
+
+  <div class="adjustment-panel" id="adjustmentPanel" style="display: none;">
+    <h3>Điều chỉnh vị trí</h3>
+    <div class="adjustment-control">
+      <label for="footerBottom">Footer từ dưới (cm):</label>
+      <input type="number" id="footerBottom" value="0" step="0.1" onchange="adjustFooterPosition()">
+    </div>
+    <div class="adjustment-control">
+      <label for="contentBottom">Khoảng cách nội dung (px):</label>
+      <input type="number" id="contentBottom" value="45" step="5" onchange="adjustContentMargin()">
+    </div>
+    <div class="adjustment-control">
+      <label for="signatureTop">Khoảng cách chữ ký (px):</label>
+      <input type="number" id="signatureTop" value="15" step="5" onchange="adjustSignatureMargin()">
+    </div>
+    <button onclick="resetAdjustments()">Đặt lại mặc định</button>
+  </div>
+
+  <div class="a4-container">
+    <div class="header">
+      <div class="left-header">
+        <h1>BỆNH VIỆN ĐA KHOA HÀ GIANG TỈNH TUYÊN QUANG</h1>
+        <h2 class="center-text"><strong>KHOA VI SINH - SINH HỌC PHÂN TỬ</strong></h2>
+        <div class="divider">---oOo---</div>
+      </div>
+      <div class="right-header">
+        <h1>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h1>
+        <h2 class="center-text"><strong>Độc lập – Tự do – Hạnh phúc</strong></h2>
+        <div class="divider">---oOo---</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="title">PHIẾU CAM KẾT ĐỌC HIỂU TÀI LIỆU</div>
+      <div class="info">
+        Tên tôi là: <strong id="personName">..................................</strong><br>
+        Nhân viên khoa: <strong>Khoa Vi sinh – SHPT</strong><br><br>
+        Tôi đã được đọc và xin cam kết tuân thủ mọi nội dung đề cập trong (những) tài liệu sau:
+      </div>
+
+      <table id="docTable">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Tên tài liệu</th>
+            <th>Phiên bản</th>
+            <th>Mã tài liệu</th>
+            <th>Ngày ban hành</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- dữ liệu sẽ được thêm bằng JS -->
+        </tbody>
+      </table>
+      
+      <div class="signature-container">
+        <div class="signature-block">
+          <p id="signatureLocationDate"></p>
+          <p><strong>Người cam kết</strong></p>
+          <p>(Ký, ghi rõ họ tên)</p>
+          <br><br><br>
+          <p><strong id="signName">..................................</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer màn hình -->
+    <div class="editable-footer">
+      <span id="edit-footer-1" contenteditable="true">Mã: VS-QTQL.3.2-BM09</span>
+      <span id="edit-footer-2" contenteditable="true">Ngày ban hành: 20/10/2022</span>
+      <span id="edit-footer-3" contenteditable="true">Phiên bản: 1.0</span>
+      <span id="edit-footer-4" contenteditable="true">Trang: <span class="current-page">1</span>/<span class="total-pages">1</span></span>
+    </div>
+  </div>
+
+  <!-- Footer in lặp lại khi in -->
+  <div class="repeating-print-footer">
+    <span id="print-footer-1"></span>
+    <span id="print-footer-2"></span>
+    <span id="print-footer-3"></span>
+    <span id="print-footer-4"></span>
+  </div>
+
+  <script>
+    const url = "https://script.google.com/macros/s/AKfycbxq1_5kIYyAjYrnxb3FdFxYesAN_jIjPBHR1c5eed8-pMXY9rJq1MwU_sIbhN9RE1-R/exec";
+    let dataCache = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    function printDocument() {
+      // Cập nhật số trang trước khi in
+      updatePageNumbers();
+      
+      document.getElementById('print-footer-1').innerText = document.getElementById('edit-footer-1').innerText;
+      document.getElementById('print-footer-2').innerText = document.getElementById('edit-footer-2').innerText;
+      document.getElementById('print-footer-3').innerText = document.getElementById('edit-footer-3').innerText;
+      document.getElementById('print-footer-4').innerText = document.getElementById('edit-footer-4').innerText;
+      window.print();
+    }
+
+    function updatePageNumbers() {
+      // Tính toán số trang (trong trường hợp phức tạp có thể tính dựa trên chiều dài nội dung)
+      // Ở đây chúng ta giả định chỉ có 1 trang
+      totalPages = 1;
+      currentPage = 1;
+      
+      document.querySelector('.current-page').innerText = currentPage;
+      document.querySelector('.total-pages').innerText = totalPages;
+    }
+
+    async function loadData() {
+      const tbody = document.querySelector("#docTable tbody");
+      tbody.innerHTML = `<tr><td colspan="5">Đang tải dữ liệu...</td></tr>`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Lỗi mạng: ${res.statusText}`);
+        dataCache = await res.json();
+        renderTable(dataCache);
+        populateDateFilter();
+        updateSignatureDate();
+        updatePageNumbers();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Không tải được dữ liệu: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector("#docTable tbody");
+      tbody.innerHTML = "";
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Không có tài liệu nào cho ngày đã chọn.</td></tr>`;
+        return;
+      }
+      data.forEach((item, i) => {
+        const date = new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN");
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${item.ten_tai_lieu}</td>
+            <td>${item.phien_ban}</td>
+            <td>${item.ma_tai_lieu}</td>
+            <td>${date}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function populateDateFilter() {
+      const select = document.getElementById("dateFilter");
+      const dates = [...new Set(dataCache.map(item =>
+        new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN")
+      ))];
+      dates.sort((a, b) => {
+        const [dayA, monthA, yearA] = a.split('/');
+        const [dayB, monthB, yearB] = b.split('/');
+        return new Date(`${yearB}-${monthB}-${dayB}`) - new Date(`${yearA}-${monthA}-${dayA}`);
+      });
+      select.innerHTML = '<option value="">-- Lọc theo ngày ban hành --</option>';
+      dates.forEach(date => {
+        select.innerHTML += `<option value="${date}">${date}</option>`;
+      });
+    }
+
+    function updateSignatureDate(selectedDate) {
+      const dateElement = document.getElementById("signatureLocationDate");
+      let dateToDisplay;
+      if (selectedDate) {
+        const parts = selectedDate.split('/');
+        const day = parts[0];
+        const month = parts[1];
+        const year = parts[2];
+        dateToDisplay = `ngày ${day} tháng ${month} năm ${year}`;
+      } else {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+        dateToDisplay = `ngày ${day} tháng ${month} năm ${year}`;
+      }
+      dateElement.innerText = `Hà Giang, ${dateToDisplay}`;
+    }
+
+    function filterByDate() {
+      const selectedDate = document.getElementById("dateFilter").value;
+      updateSignatureDate(selectedDate);
+      if (!selectedDate) {
+        renderTable(dataCache);
+        return;
+      }
+      const filtered = dataCache.filter(item =>
+        new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN") === selectedDate
+      );
+      renderTable(filtered);
+    }
+
+    function updateName() {
+      const name = document.getElementById("nameSelect").value || "..................................";
+      document.getElementById("personName").innerText = name;
+      document.getElementById("signName").innerText = name;
+    }
+
+    function toggleAdjustmentPanel() {
+      const panel = document.getElementById('adjustmentPanel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function adjustFooterPosition() {
+      const value = document.getElementById('footerBottom').value;
+      document.querySelector('.editable-footer').style.bottom = value + 'cm';
+      document.querySelectorAll('.repeating-print-footer').forEach(el => {
+        el.style.bottom = value + 'cm';
+      });
+    }
+
+    function adjustContentMargin() {
+      const value = document.getElementById('contentBottom').value;
+      document.querySelector('.content').style.marginBottom = value + 'px';
+    }
+
+    function adjustSignatureMargin() {
+      const value = document.getElementById('signatureTop').value;
+      document.querySelector('.signature-container').style.marginTop = value + 'px';
+    }
+
+    function resetAdjustments() {
+      document.getElementById('footerBottom').value = 0.5;
+      document.getElementById('contentBottom').value = 60;
+      document.getElementById('signatureTop').value = 40;
+      
+      document.querySelector('.editable-footer').style.bottom = '0.5cm';
+      document.querySelectorAll('.repeating-print-footer').forEach(el => {
+        el.style.bottom = '0.5cm';
+      });
+      document.querySelector('.content').style.marginBottom = '60px';
+      document.querySelector('.signature-container').style.marginTop = '40px';
+    }
+
+    // Khởi tạo
+    loadData();
+  </script>
+</body>
+</html>
