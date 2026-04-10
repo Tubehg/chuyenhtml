@@ -4,45 +4,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phiếu Cam Kết Đọc Hiểu Tài Liệu</title>
+  <title>Hệ Thống Quản Lý Tài Liệu - Khoa Vi Sinh</title>
   <style>
+    /* ============================================================
+       RESET & GLOBAL
+    ============================================================ */
+    * { box-sizing: border-box; }
+
     body {
       font-family: "Times New Roman", Times, serif;
       margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #f5f5f5;
+      padding: 0;
+      background-color: #e8e8e8;
     }
 
-    .a4-container {
+    /* ============================================================
+       TAB NAVIGATION BAR
+    ============================================================ */
+    .tab-nav {
+      display: flex;
+      background: #2c3e50;
+      padding: 0 10px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .tab-btn {
+      padding: 12px 15px;
+      border: none;
+      background: transparent;
+      color: #bdc3c7;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: "Times New Roman", Times, serif;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      background: #34495e;
+      color: #ecf0f1;
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      border-bottom-color: #3498db;
+      background: #34495e;
+      font-weight: bold;
+    }
+
+    /* ============================================================
+       MODULE CONTAINERS
+    ============================================================ */
+    .module {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px 10px 30px 10px;
+    }
+
+    .module.active {
+      display: flex;
+    }
+
+    /* ============================================================
+       TOOLBAR
+    ============================================================ */
+    .button-group {
+      margin: 10px 0;
+      text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    button, select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    button {
+      background: #27ae60;
+      color: #fff;
+      border: none;
+    }
+
+    button:hover {
+      background: #229954;
+    }
+
+    button.btn-print {
+      background: #2980b9;
+    }
+
+    button.btn-print:hover {
+      background: #2471a3;
+    }
+
+    /* ============================================================
+       A4 CONTAINER - PORTRAIT (Module 1)
+    ============================================================ */
+    .a4-portrait {
       width: 21cm;
       min-height: 29.7cm;
       padding: 1.5cm;
       background-color: white;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 12px rgba(0,0,0,0.15);
       position: relative;
       display: flex;
       flex-direction: column;
     }
 
-    .header {
+    /* ============================================================
+       A4 CONTAINER - LANDSCAPE (Module 2,3,4,5)
+    ============================================================ */
+    .a4-landscape {
+      width: 29.7cm;
+      min-height: 21cm;
+      padding: 1cm 1.5cm 2cm 1.5cm;
+      background-color: white;
+      box-shadow: 0 0 12px rgba(0,0,0,0.15);
+      position: relative;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       margin-bottom: 20px;
     }
 
+    /* ============================================================
+       DOCUMENT HEADER
+    ============================================================ */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
     .left-header h1 {
-      font-size: 14px;
-      margin: 5px 0;
+      font-size: 13px;
+      margin: 3px 0;
       text-transform: uppercase;
       font-weight: normal;
     }
 
     .right-header h1 {
-      font-size: 14px;
-      margin: 5px 0;
+      font-size: 13px;
+      margin: 3px 0;
       text-transform: uppercase;
       text-align: center;
       font-weight: normal;
@@ -50,9 +165,9 @@
 
     .left-header h2,
     .right-header h2 {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: normal;
-      margin: 5px 0;
+      margin: 3px 0;
       text-align: center;
     }
 
@@ -64,52 +179,88 @@
 
     .divider {
       text-align: center;
-      margin: 10px 0;
+      margin: 4px 0;
     }
 
-    .title {
+    /* ============================================================
+       DOCUMENT TITLE
+    ============================================================ */
+    .doc-title {
       text-align: center;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
-      margin: 20px 0;
+      margin: 12px 0 6px 0;
       text-transform: uppercase;
     }
 
-    .info {
-      margin-bottom: 15px;
+    .doc-subtitle {
+      text-align: center;
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-style: italic;
     }
 
-    .content {
+    /* ============================================================
+       TABLE STYLES
+    ============================================================ */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 5px 7px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    th {
+      background: #f0f0f0;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    td.text-left {
+      text-align: left;
+    }
+
+    /* ============================================================
+       DOCUMENT FOOTER (on-screen)
+    ============================================================ */
+    .doc-footer {
+      position: absolute;
+      bottom: 0.5cm;
+      left: 1.5cm;
+      right: 1.5cm;
+      display: flex;
+      font-size: 11px;
+      border-top: 1px solid #bbb;
+      padding-top: 4px;
+      justify-content: space-between;
+      background-color: white;
+      z-index: 10;
+    }
+
+    /* ============================================================
+       MODULE 1 SPECIFIC - CAM KẾT
+    ============================================================ */
+    .content-camket {
       flex-grow: 1;
       display: flex;
       flex-direction: column;
       margin-bottom: 60px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 20px 0;
+    .info-camket {
+      margin-bottom: 12px;
+      line-height: 1.8;
     }
 
-    th,
-    td {
-      border: 1px solid #000;
-      padding: 8px;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    #docTable td:nth-child(2) {
-      text-align: left;
-    }
-    
+    #docTable td:nth-child(2),
     #docTable td:nth-child(4) {
       text-align: left;
-    }
-
-    th {
-      background: #f2f2f2;
     }
 
     .signature-container {
@@ -124,360 +275,730 @@
     }
 
     .signature-block p {
-      margin: 6px 0;
-    }
-
-    .editable-footer {
-      position: absolute;
-      bottom: 0.5cm;
-      left: 1.5cm;
-      right: 1.5cm;
-      display: flex;
-      font-size: 12px;
-      border-top: 1px solid #ccc;
-      padding-top: 5px;
-      justify-content: space-between;
-      background-color: white;
-      z-index: 10;
+      margin: 5px 0;
     }
 
     .repeating-print-footer {
       display: none;
     }
 
-    .button-group {
-      margin: 10px 0;
-      text-align: center;
+    /* ============================================================
+       ADJUSTMENT PANEL
+    ============================================================ */
+    .adjustment-panel {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background: white;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      font-family: "Times New Roman", Times, serif;
+      min-width: 200px;
     }
 
-    button,
-    select {
-      padding: 8px 12px;
-      margin: 0 5px 5px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      cursor: pointer;
+    .adjustment-panel h3 {
+      margin-top: 0;
       font-size: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .adjustment-control {
+      margin: 8px 0;
+    }
+
+    .adjustment-control label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .adjustment-control input {
+      width: 70px;
+      padding: 4px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
       font-family: "Times New Roman", Times, serif;
     }
 
-    button {
-      background: #4CAF50;
-      color: #fff;
-      border: none;
-    }
-
-    button:hover {
-      background: #45a049;
-    }
-
+    /* ============================================================
+       PRINT STYLES
+    ============================================================ */
     @media print {
+      .tab-nav,
+      .button-group,
+      .adjustment-panel {
+        display: none !important;
+      }
+
       body {
         background-color: white;
         padding: 0;
-        font-family: "Times New Roman", Times, serif;
+        margin: 0;
       }
 
-      .button-group {
-        display: none;
+      /* Ẩn tất cả module */
+      .module {
+        display: none !important;
       }
 
-      .a4-container {
+      /* Chỉ hiển thị module đang in */
+      .module.printing {
+        display: flex !important;
+        padding: 0 !important;
+        align-items: flex-start;
+      }
+
+      .a4-portrait,
+      .a4-landscape {
         width: 100%;
         height: auto;
         min-height: auto;
         box-shadow: none;
         padding: 0;
         margin: 0;
-        page-break-after: always;
       }
 
-      .content {
-        margin-bottom: 0;
-      }
-
-      .editable-footer {
+      /* Ẩn footer màn hình khi in */
+      .doc-footer {
         display: none;
       }
 
+      /* Footer lặp lại - Module 1 (portrait) */
       .repeating-print-footer {
         display: flex;
         position: fixed;
-        bottom: 0.5cm;
-        left: 1.5cm;
-        right: 1.5cm;
+        bottom: 0.3cm;
+        left: 1cm;
+        right: 1cm;
         justify-content: space-between;
-        font-size: 12px;
-        border-top: 1px solid #ccc;
-        padding-top: 5px;
+        font-size: 11px;
+        border-top: 1px solid #aaa;
+        padding-top: 3px;
         background-color: white;
       }
-      
-      .signature-container {
-        margin-top: 30px;
+
+      /* =====================================================
+         Footer lặp lại - dùng @page margin boxes (JS inject)
+         Div này luôn ẩn, chỉ dùng để đọc nội dung có thể edit
+      ===================================================== */
+      .landscape-print-footer {
+        display: none !important;
       }
-      
-      /* Ẩn các phần tử điều chỉnh khi in */
+
+      .content-camket {
+        margin-bottom: 0;
+      }
+
       .adjustment-panel {
         display: none !important;
       }
     }
 
-    .adjustment-panel {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: white;
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 1000;
-      font-family: "Times New Roman", Times, serif;
-    }
-    
-    .adjustment-panel h3 {
-      margin-top: 0;
-      font-size: 14px;
-    }
-    
-    .adjustment-control {
-      margin: 8px 0;
-    }
-    
-    .adjustment-control label {
-      display: block;
-      font-size: 12px;
-      margin-bottom: 3px;
-    }
-    
-    .adjustment-control input {
-      width: 60px;
-      padding: 4px;
-      font-family: "Times New Roman", Times, serif;
+    /* Default page size */
+    @page {
+      size: A4 portrait;
+      margin: 1.5cm;
     }
   </style>
 </head>
 
 <body>
-  <div class="button-group">
-    <button onclick="printDocument()">In Phiếu</button>
-    <select id="dateFilter" onchange="filterByDate()">
-      <option value="">-- Lọc theo ngày ban hành --</option>
-    </select>
-    <select id="nameSelect" onchange="updateName()">
-      <option value="">-- Chọn tên --</option>
-      <option>Lý Hoàng Việt</option>
-      <option>Phạm Thùy Linh</option>
-      <option>Phạm Thị Luyến</option>
-      <option>Nguyễn Thị Hoài Linh</option>
-      <option>Bùi Thị Hải Bình</option>
-      <option>Lê Hữu Tú</option>
-      <option>Mai Thị Hồng Sâm</option>
-      <option>Đào Phương Nam</option>
-    </select>
-    <button onclick="loadData()">Làm mới dữ liệu</button>
-    <button onclick="toggleAdjustmentPanel()">Hiệu chỉnh</button>
+
+  <!-- ============================================================
+       TAB NAVIGATION
+  ============================================================ -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('tab-camket', this)">📋 Cam Kết Đọc Hiểu</button>
+    <button class="tab-btn" onclick="switchTab('tab-danhmuc', this)">📁 Danh Mục TL (BM03)</button>
+    <button class="tab-btn" onclick="switchTab('tab-phanphoi', this)">📤 Sổ Phân Phối (BM04)</button>
+    <button class="tab-btn" onclick="switchTab('tab-thuho', this)">📥 Sổ Thu Hồi (BM08)</button>
+    <button class="tab-btn" onclick="switchTab('tab-soatxet', this)">🔍 Kế Hoạch Soát Xét (BM05)</button>
   </div>
 
-  <div class="adjustment-panel" id="adjustmentPanel" style="display: none;">
-    <h3>Điều chỉnh vị trí</h3>
-    <div class="adjustment-control">
-      <label for="footerBottom">Footer từ dưới (cm):</label>
-      <input type="number" id="footerBottom" value="0" step="0.1" onchange="adjustFooterPosition()">
+  <!-- ============================================================
+       MODULE 1: PHIẾU CAM KẾT ĐỌC HIỂU - BM09
+  ============================================================ -->
+  <div id="tab-camket" class="module active">
+
+    <div class="button-group">
+      <button class="btn-print" onclick="printModule('tab-camket', 'portrait')">🖨️ In Phiếu</button>
+      <select id="dateFilter" onchange="filterByDate()">
+        <option value="">-- Lọc theo ngày ban hành --</option>
+      </select>
+      <select id="nameSelect" onchange="updateName()">
+        <option value="">-- Chọn tên --</option>
+        <option>Lý Hoàng Việt</option>
+        <option>Phạm Thùy Linh</option>
+        <option>Phạm Thị Luyến</option>
+        <option>Nguyễn Thị Hoài Linh</option>
+        <option>Bùi Thị Hải Bình</option>
+        <option>Lê Hữu Tú</option>
+        <option>Mai Thị Hồng Sâm</option>
+        <option>Đào Phương Nam</option>
+      </select>
+      <button onclick="loadData()">🔄 Làm mới</button>
+      <button onclick="toggleAdjustmentPanel()">⚙️ Hiệu chỉnh</button>
     </div>
-    <div class="adjustment-control">
-      <label for="contentBottom">Khoảng cách nội dung (px):</label>
-      <input type="number" id="contentBottom" value="45" step="5" onchange="adjustContentMargin()">
+
+    <!-- Adjustment Panel -->
+    <div class="adjustment-panel" id="adjustmentPanel" style="display: none;">
+      <h3>Điều chỉnh vị trí</h3>
+      <div class="adjustment-control">
+        <label for="footerBottom">Footer từ dưới (cm):</label>
+        <input type="number" id="footerBottom" value="0.5" step="0.1" onchange="adjustFooterPosition()">
+      </div>
+      <div class="adjustment-control">
+        <label for="contentBottom">Khoảng cách nội dung (px):</label>
+        <input type="number" id="contentBottom" value="60" step="5" onchange="adjustContentMargin()">
+      </div>
+      <div class="adjustment-control">
+        <label for="signatureTop">Khoảng cách chữ ký (px):</label>
+        <input type="number" id="signatureTop" value="40" step="5" onchange="adjustSignatureMargin()">
+      </div>
+      <button onclick="resetAdjustments()" style="background:#e74c3c; margin-top:8px; width:100%">↩ Đặt lại mặc định</button>
     </div>
-    <div class="adjustment-control">
-      <label for="signatureTop">Khoảng cách chữ ký (px):</label>
-      <input type="number" id="signatureTop" value="15" step="5" onchange="adjustSignatureMargin()">
+
+    <!-- A4 Portrait -->
+    <div class="a4-portrait">
+      <div class="doc-header">
+        <div class="left-header">
+          <h1>BỆNH VIỆN ĐA KHOA HÀ GIANG TỈNH TUYÊN QUANG</h1>
+          <h2 class="center-text"><strong>KHOA VI SINH - SINH HỌC PHÂN TỬ</strong></h2>
+          <div class="divider">---oOo---</div>
+        </div>
+        <div class="right-header">
+          <h1>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h1>
+          <h2 class="center-text"><strong>Độc lập – Tự do – Hạnh phúc</strong></h2>
+          <div class="divider">---oOo---</div>
+        </div>
+      </div>
+
+      <div class="content-camket">
+        <div class="doc-title">PHIẾU CAM KẾT ĐỌC HIỂU TÀI LIỆU</div>
+        <div class="info-camket">
+          Tên tôi là: <strong id="personName">..................................</strong><br>
+          Nhân viên khoa: <strong>Khoa Vi sinh – SHPT</strong><br><br>
+          Tôi đã được đọc và xin cam kết tuân thủ mọi nội dung đề cập trong (những) tài liệu sau:
+        </div>
+
+        <table id="docTable">
+          <thead>
+            <tr>
+              <th style="width:40px">STT</th>
+              <th>Tên tài liệu</th>
+              <th style="width:80px">Phiên bản</th>
+              <th style="width:140px">Mã tài liệu</th>
+              <th style="width:110px">Ngày ban hành</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5" style="text-align:center; color:#888;">Đang tải dữ liệu...</td></tr>
+          </tbody>
+        </table>
+
+        <div class="signature-container">
+          <div class="signature-block">
+            <p id="signatureLocationDate"></p>
+            <p><strong>Người cam kết</strong></p>
+            <p>(Ký, ghi rõ họ tên)</p>
+            <br><br><br>
+            <p><strong id="signName">..................................</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer màn hình -->
+      <div class="doc-footer" id="camket-footer">
+        <span id="edit-footer-1" contenteditable="true">Mã: VS-QTQL.3.2-BM09</span>
+        <span id="edit-footer-2" contenteditable="true">Ngày ban hành: 20/10/2022</span>
+        <span id="edit-footer-3" contenteditable="true">Phiên bản: 1.0</span>
+        <span id="edit-footer-4" contenteditable="true">Trang: <span class="current-page">1</span>/<span class="total-pages">1</span></span>
+      </div>
     </div>
-    <button onclick="resetAdjustments()">Đặt lại mặc định</button>
+
+    <!-- Footer lặp lại khi in -->
+    <div class="repeating-print-footer">
+      <span id="print-footer-1"></span>
+      <span id="print-footer-2"></span>
+      <span id="print-footer-3"></span>
+      <span id="print-footer-4"></span>
+    </div>
+
   </div>
 
-  <div class="a4-container">
-    <div class="header">
-      <div class="left-header">
-        <h1>BỆNH VIỆN ĐA KHOA HÀ GIANG TỈNH TUYÊN QUANG</h1>
-        <h2 class="center-text"><strong>KHOA VI SINH - SINH HỌC PHÂN TỬ</strong></h2>
-        <div class="divider">---oOo---</div>
-      </div>
-      <div class="right-header">
-        <h1>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h1>
-        <h2 class="center-text"><strong>Độc lập – Tự do – Hạnh phúc</strong></h2>
-        <div class="divider">---oOo---</div>
-      </div>
+  <!-- ============================================================
+       MODULE 2: DANH MỤC TÀI LIỆU NỘI BỘ CÓ KIỂM SOÁT - BM03
+  ============================================================ -->
+  <div id="tab-danhmuc" class="module">
+
+    <div class="button-group">
+      <button class="btn-print" onclick="printModule('tab-danhmuc', 'landscape')">🖨️ In Danh Mục</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Từ ngày: <input type="date" id="dm-tuNgay" onchange="filterDanhMuc()" style="padding:3px;font-family:inherit;">
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Đến ngày: <input type="date" id="dm-denNgay" onchange="filterDanhMuc()" style="padding:3px;font-family:inherit;">
+      </label>
+      <button onclick="clearDateFilter('dm-tuNgay','dm-denNgay',renderDanhMuc,dmCacheAll)" style="background:#e67e22;">✕ Xóa lọc</button>
+      <button onclick="loadDanhMuc()">🔄 Làm mới</button>
     </div>
 
-    <div class="content">
-      <div class="title">PHIẾU CAM KẾT ĐỌC HIỂU TÀI LIỆU</div>
-      <div class="info">
-        Tên tôi là: <strong id="personName">..................................</strong><br>
-        Nhân viên khoa: <strong>Khoa Vi sinh – SHPT</strong><br><br>
-        Tôi đã được đọc và xin cam kết tuân thủ mọi nội dung đề cập trong (những) tài liệu sau:
+    <!-- A4 Landscape -->
+    <div class="a4-landscape">
+      <div class="doc-header">
+        <div class="left-header">
+          <h1>BỆNH VIỆN ĐA KHOA HÀ GIANG TỈNH TUYÊN QUANG</h1>
+          <h2 class="center-text"><strong>KHOA VI SINH - SINH HỌC PHÂN TỬ</strong></h2>
+          <div class="divider">---oOo---</div>
+        </div>
+        <div class="right-header" style="text-align:right">
+          <h2 style="font-size:12px; font-weight:normal; font-style:italic; text-align:right;">Biểu mẫu: BM03</h2>
+        </div>
       </div>
 
-      <table id="docTable">
+      <div class="doc-title">DANH MỤC TÀI LIỆU NỘI BỘ CÓ KIỂM SOÁT</div>
+      <div class="doc-subtitle">Khoa Vi sinh – Sinh học phân tử</div>
+
+      <table id="dm-table">
         <thead>
           <tr>
-            <th>STT</th>
+            <th style="width:40px">STT</th>
             <th>Tên tài liệu</th>
-            <th>Phiên bản</th>
-            <th>Mã tài liệu</th>
-            <th>Ngày ban hành</th>
+            <th style="width:130px">Mã tài liệu</th>
+            <th style="width:75px">Phiên bản</th>
+            <th style="width:85px">Lần ban hành</th>
+            <th style="width:110px">Ngày ban hành</th>
+            <th style="width:110px">Số lượng bản sao</th>
           </tr>
         </thead>
         <tbody>
-          <!-- dữ liệu sẽ được thêm bằng JS -->
+          <tr><td colspan="7" style="text-align:center; color:#888;">Nhấn "Làm mới" để tải dữ liệu</td></tr>
         </tbody>
       </table>
-      
-      <div class="signature-container">
-        <div class="signature-block">
-          <p id="signatureLocationDate"></p>
-          <p><strong>Người cam kết</strong></p>
-          <p>(Ký, ghi rõ họ tên)</p>
-          <br><br><br>
-          <p><strong id="signName">..................................</strong></p>
-        </div>
+
+      <div class="doc-footer">
+        <span id="dm-footer-1" contenteditable="true">Mã: VS-QTQL.3.2-BM03</span>
+        <span id="dm-footer-2" contenteditable="true">Ngày ban hành: 20/10/2022</span>
+        <span id="dm-footer-3" contenteditable="true">Phiên bản: 1.0</span>
       </div>
     </div>
 
-    <!-- Footer màn hình -->
-    <div class="editable-footer">
-      <span id="edit-footer-1" contenteditable="true">Mã: VS-QTQL.3.2-BM09</span>
-      <span id="edit-footer-2" contenteditable="true">Ngày ban hành: 20/10/2022</span>
-      <span id="edit-footer-3" contenteditable="true">Phiên bản: 1.0</span>
-      <span id="edit-footer-4" contenteditable="true">Trang: <span class="current-page">1</span>/<span class="total-pages">1</span></span>
+    <!-- Footer lặp lại khi in - BM03 -->
+    <div class="landscape-print-footer">
+      <span id="dm-pf-1"></span>
+      <span id="dm-pf-2"></span>
+      <span id="dm-pf-3"></span>
     </div>
+
   </div>
 
-  <!-- Footer in lặp lại khi in -->
-  <div class="repeating-print-footer">
-    <span id="print-footer-1"></span>
-    <span id="print-footer-2"></span>
-    <span id="print-footer-3"></span>
-    <span id="print-footer-4"></span>
+  <!-- ============================================================
+       MODULE 3: SỔ THEO DÕI PHÂN PHỐI TÀI LIỆU - BM04
+  ============================================================ -->
+  <div id="tab-phanphoi" class="module">
+
+    <div class="button-group">
+      <button class="btn-print" onclick="printModule('tab-phanphoi', 'landscape')">🖨️ In Sổ Phân Phối</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Từ ngày: <input type="date" id="pp-tuNgay" onchange="filterPhanPhoi()" style="padding:3px;font-family:inherit;">
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Đến ngày: <input type="date" id="pp-denNgay" onchange="filterPhanPhoi()" style="padding:3px;font-family:inherit;">
+      </label>
+      <button onclick="clearDateFilter('pp-tuNgay','pp-denNgay',renderPhanPhoi,ppCacheAll)" style="background:#e67e22;">✕ Xóa lọc</button>
+      <button onclick="loadPhanPhoi()">🔄 Làm mới</button>
+    </div>
+
+    <!-- A4 Landscape -->
+    <div class="a4-landscape">
+      <div class="doc-header">
+        <div class="left-header">
+          <h1>BỆNH VIỆN ĐA KHOA HÀ GIANG TỈNH TUYÊN QUANG</h1>
+          <h2 class="center-text"><strong>KHOA VI SINH - SINH HỌC PHÂN TỬ</strong></h2>
+          <div class="divider">---oOo---</div>
+        </div>
+        <div class="right-header" style="text-align:right">
+          <h2 style="font-size:12px; font-weight:normal; font-style:italic; text-align:right;">Biểu mẫu: BM04</h2>
+        </div>
+      </div>
+
+      <div class="doc-title">SỔ THEO DÕI PHÂN PHỐI TÀI LIỆU</div>
+      <div class="doc-subtitle">Khoa Vi sinh – Sinh học phân tử</div>
+
+      <table id="pp-table">
+        <thead>
+          <tr>
+            <th style="width:40px">STT</th>
+            <th>Tên tài liệu</th>
+            <th style="width:110px">Mã tài liệu</th>
+            <th style="width:100px">Ngày ban hành</th>
+            <th style="width:65px">Phiên bản</th>
+            <th style="width:100px">Ngày phân phối</th>
+            <th style="width:120px">Người phân phối</th>
+            <th style="width:130px">Đơn vị/người nhận</th>
+            <th style="width:100px">Ngày nhận tài liệu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="9" style="text-align:center; color:#888;">Nhấn "Làm mới" để tải dữ liệu</td></tr>
+        </tbody>
+      </table>
+
+      <div class="doc-footer">
+        <span id="pp-footer-1" contenteditable="true">Mã: VS-QTQL.3.2-BM04</span>
+        <span id="pp-footer-2" contenteditable="true">Ngày ban hành: 20/10/2022</span>
+        <span id="pp-footer-3" contenteditable="true">Phiên bản: 1.0</span>
+      </div>
+    </div>
+
+    <!-- Footer lặp lại khi in - BM04 -->
+    <div class="landscape-print-footer">
+      <span id="pp-pf-1"></span>
+      <span id="pp-pf-2"></span>
+      <span id="pp-pf-3"></span>
+    </div>
+
   </div>
 
+  <!-- ============================================================
+       MODULE 4: SỔ THEO DÕI THU HỒI TÀI LIỆU - BM08
+  ============================================================ -->
+  <div id="tab-thuho" class="module">
+
+    <div class="button-group">
+      <button class="btn-print" onclick="printModule('tab-thuho', 'landscape')">🖨️ In Sổ Thu Hồi</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Từ ngày: <input type="date" id="th-tuNgay" onchange="filterThuHoi()" style="padding:3px;font-family:inherit;">
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Đến ngày: <input type="date" id="th-denNgay" onchange="filterThuHoi()" style="padding:3px;font-family:inherit;">
+      </label>
+      <button onclick="clearDateFilter('th-tuNgay','th-denNgay',renderThuHoi,thCacheAll)" style="background:#e67e22;">✕ Xóa lọc</button>
+      <button onclick="loadThuHoi()">🔄 Làm mới</button>
+    </div>
+
+    <!-- A4 Landscape -->
+    <div class="a4-landscape">
+      <div class="doc-header">
+        <div class="left-header">
+          <h1>BỆNH VIỆN ĐA KHOA HÀ GIANG TỈNH TUYÊN QUANG</h1>
+          <h2 class="center-text"><strong>KHOA VI SINH - SINH HỌC PHÂN TỬ</strong></h2>
+          <div class="divider">---oOo---</div>
+        </div>
+        <div class="right-header" style="text-align:right">
+          <h2 style="font-size:12px; font-weight:normal; font-style:italic; text-align:right;">Biểu mẫu: BM08</h2>
+        </div>
+      </div>
+
+      <div class="doc-title">SỔ THEO DÕI THU HỒI TÀI LIỆU</div>
+      <div class="doc-subtitle">Khoa Vi sinh – Sinh học phân tử</div>
+
+      <table id="th-table">
+        <thead>
+          <tr>
+            <th style="width:40px">STT</th>
+            <th>Tên tài liệu</th>
+            <th style="width:110px">Mã tài liệu</th>
+            <th style="width:130px">Ngày ban hành & Phiên bản</th>
+            <th style="width:110px">Lý do thu hồi</th>
+            <th style="width:90px">Ngày thu hồi</th>
+            <th style="width:80px">Số lượng thu hồi</th>
+            <th style="width:100px">Người thực hiện</th>
+            <th style="width:110px">Phê duyệt của lãnh đạo khoa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="9" style="text-align:center; color:#888;">Nhấn "Làm mới" để tải dữ liệu</td></tr>
+        </tbody>
+      </table>
+
+      <div class="doc-footer">
+        <span id="th-footer-1" contenteditable="true">Mã: VS-QTQL.3.2-BM08</span>
+        <span id="th-footer-2" contenteditable="true">Ngày ban hành: 20/10/2022</span>
+        <span id="th-footer-3" contenteditable="true">Phiên bản: 1.0</span>
+      </div>
+    </div>
+
+    <!-- Footer lặp lại khi in - BM08 -->
+    <div class="landscape-print-footer">
+      <span id="th-pf-1"></span>
+      <span id="th-pf-2"></span>
+      <span id="th-pf-3"></span>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       MODULE 5: KẾ HOẠCH SOÁT XÉT TÀI LIỆU - BM05
+  ============================================================ -->
+  <div id="tab-soatxet" class="module">
+
+    <div class="button-group">
+      <button class="btn-print" onclick="printModule('tab-soatxet', 'landscape')">🖨️ In Kế Hoạch</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Từ ngày: <input type="date" id="sx-tuNgay" onchange="filterSoatXet()" style="padding:3px;font-family:inherit;">
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
+        Đến ngày: <input type="date" id="sx-denNgay" onchange="filterSoatXet()" style="padding:3px;font-family:inherit;">
+      </label>
+      <button onclick="clearDateFilter('sx-tuNgay','sx-denNgay',renderSoatXet,sxCacheAll)" style="background:#e67e22;">✕ Xóa lọc</button>
+      <button onclick="loadSoatXet()">🔄 Làm mới</button>
+    </div>
+
+    <!-- A4 Landscape -->
+    <div class="a4-landscape">
+      <div class="doc-header">
+        <div class="left-header">
+          <h1>BỆNH VIỆN ĐA KHOA HÀ GIANG TỈNH TUYÊN QUANG</h1>
+          <h2 class="center-text"><strong>KHOA VI SINH - SINH HỌC PHÂN TỬ</strong></h2>
+          <div class="divider">---oOo---</div>
+        </div>
+        <div class="right-header" style="text-align:right">
+          <h2 style="font-size:12px; font-weight:normal; font-style:italic; text-align:right;">Biểu mẫu: BM05</h2>
+        </div>
+      </div>
+
+      <div class="doc-title">KẾ HOẠCH SOÁT XÉT TÀI LIỆU</div>
+      <div class="doc-subtitle" id="sx-year-label">Khoa Vi sinh – Sinh học phân tử &nbsp;|&nbsp; Năm: <span id="sx-current-year"></span></div>
+
+      <table id="sx-table">
+        <thead>
+          <tr>
+            <th style="width:40px">STT</th>
+            <th>Tên tài liệu</th>
+            <th style="width:130px">Mã tài liệu</th>
+            <th style="width:75px">Phiên bản</th>
+            <th style="width:120px">Ngày ban hành gốc</th>
+            <th style="width:140px">Ngày soát xét dự kiến</th>
+            <th style="width:130px">Người thực hiện</th>
+            <th style="width:110px">Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="8" style="text-align:center; color:#888;">Nhấn "Làm mới" để tải dữ liệu</td></tr>
+        </tbody>
+      </table>
+
+      <div class="doc-footer">
+        <span id="sx-footer-1" contenteditable="true">Mã: VS-QTQL.3.2-BM05</span>
+        <span id="sx-footer-2" contenteditable="true">Ngày ban hành: 20/10/2022</span>
+        <span id="sx-footer-3" contenteditable="true">Phiên bản: 1.0</span>
+      </div>
+    </div>
+
+    <!-- Footer lặp lại khi in - BM05 -->
+    <div class="landscape-print-footer">
+      <span id="sx-pf-1"></span>
+      <span id="sx-pf-2"></span>
+      <span id="sx-pf-3"></span>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+  ============================================================ -->
   <script>
-    const url = "https://script.google.com/macros/s/AKfycbxq1_5kIYyAjYrnxb3FdFxYesAN_jIjPBHR1c5eed8-pMXY9rJq1MwU_sIbhN9RE1-R/exec";
-    let dataCache = [];
-    let currentPage = 1;
-    let totalPages = 1;
 
-    function printDocument() {
-      // Cập nhật số trang trước khi in
-      updatePageNumbers();
-      
-      document.getElementById('print-footer-1').innerText = document.getElementById('edit-footer-1').innerText;
-      document.getElementById('print-footer-2').innerText = document.getElementById('edit-footer-2').innerText;
-      document.getElementById('print-footer-3').innerText = document.getElementById('edit-footer-3').innerText;
-      document.getElementById('print-footer-4').innerText = document.getElementById('edit-footer-4').innerText;
-      window.print();
+    /* ============================================================
+       API URLs
+    ============================================================ */
+    // ============================================================
+    // CẤU HÌNH URL API - CHỈ CẦN SỬA 2 DÒNG NÀY KHI CÓ URL MỚI
+    // ============================================================
+    // BM09 - Phiếu cam kết đọc hiểu (dự án riêng)
+    const URL_CAMKET = "https://script.google.com/macros/s/AKfycbxq1_5kIYyAjYrnxb3FdFxYesAN_jIjPBHR1c5eed8-pMXY9rJq1MwU_sIbhN9RE1-R/exec";
+
+    // BM03 + BM04 + BM08 + BM05: DÙNG CHUNG 1 URL DUY NHẤT (code.gs mới)
+    // → Sau khi deploy code.gs mới, thay URL dưới đây bằng URL mới nhận được
+    const BASE_URL = "https://script.google.com/macros/s/AKfycbzc6pJWvsTUWRr9QHBq__0uKXVICWZcxzozusrIwLCn3nldIAVURjEr41zSEb_vOzs8/exec";
+
+    // Các URL module được tạo tự động từ BASE_URL + ?type=...
+    const URL_DANHMUC  = BASE_URL + "?type=danhmuc";   // BM03
+    const URL_PHANPHOI = BASE_URL + "?type=phanphoi";  // BM04
+    const URL_THUHO    = BASE_URL + "?type=thuho";      // BM08
+    const URL_SOATXET  = BASE_URL + "?type=danhmuc";   // BM05 (dùng data danh mục, transform ngày)
+
+    /* ============================================================
+       TAB SWITCHING
+    ============================================================ */
+    let currentTab = 'tab-camket';
+
+    function switchTab(tabId, btnEl) {
+      document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btnEl.classList.add('active');
+      currentTab = tabId;
+
+      // Auto-load data khi chuyển tab lần đầu
+      if (tabId === 'tab-danhmuc'  && dmCacheAll.length  === 0) loadDanhMuc();
+      if (tabId === 'tab-phanphoi' && ppCacheAll.length  === 0) loadPhanPhoi();
+      if (tabId === 'tab-thuho'    && thCacheAll.length  === 0) loadThuHoi();
+      if (tabId === 'tab-soatxet'  && sxCacheAll.length  === 0) loadSoatXet();
     }
 
+    /* ============================================================
+       PRINT FUNCTION
+    ============================================================ */
+    function printModule(tabId, orientation) {
+      let styleEl = document.getElementById('print-page-style');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'print-page-style';
+        document.head.appendChild(styleEl);
+      }
+
+      // Module 1 (portrait): đồng bộ footer có số trang
+      if (tabId === 'tab-camket') {
+        styleEl.textContent = `@page { size: A4 portrait; margin: 1cm; }`;
+        updatePageNumbers();
+        document.getElementById('print-footer-1').innerText = document.getElementById('edit-footer-1').innerText;
+        document.getElementById('print-footer-2').innerText = document.getElementById('edit-footer-2').innerText;
+        document.getElementById('print-footer-3').innerText = document.getElementById('edit-footer-3').innerText;
+        document.getElementById('print-footer-4').innerText = document.getElementById('edit-footer-4').innerText;
+      }
+
+      // Module 2-5 (landscape): dùng @page margin boxes
+      // → footer được in trong vùng margin trang, không bao giờ đè lên content
+      const footerMap = {
+        'tab-danhmuc' : ['dm-footer-1','dm-footer-2','dm-footer-3'],
+        'tab-phanphoi': ['pp-footer-1','pp-footer-2','pp-footer-3'],
+        'tab-thuho'   : ['th-footer-1','th-footer-2','th-footer-3'],
+        'tab-soatxet' : ['sx-footer-1','sx-footer-2','sx-footer-3']
+      };
+      if (orientation === 'landscape' && footerMap[tabId]) {
+        const [id1, id2, id3] = footerMap[tabId];
+        const t1 = document.getElementById(id1).innerText.replace(/"/g, "'");
+        const t2 = document.getElementById(id2).innerText.replace(/"/g, "'");
+        const t3 = document.getElementById(id3).innerText.replace(/"/g, "'");
+        styleEl.textContent = `
+          @page {
+            size: A4 landscape;
+            margin: 1cm;
+            @bottom-left {
+              content: "${t1}";
+              font-family: "Times New Roman", serif;
+              font-size: 10px;
+              border-top: 1px solid #999;
+              padding-top: 4px;
+              vertical-align: top;
+            }
+            @bottom-center {
+              content: "${t2}";
+              font-family: "Times New Roman", serif;
+              font-size: 10px;
+              border-top: 1px solid #999;
+              padding-top: 4px;
+              vertical-align: top;
+            }
+            @bottom-right {
+              content: "${t3}";
+              font-family: "Times New Roman", serif;
+              font-size: 10px;
+              border-top: 1px solid #999;
+              padding-top: 4px;
+              vertical-align: top;
+            }
+          }
+        `;
+      }
+
+      document.getElementById(tabId).classList.add('printing');
+      window.print();
+      document.getElementById(tabId).classList.remove('printing');
+    }
+
+    /* ============================================================
+       MODULE 1: PHIẾU CAM KẾT ĐỌC HIỂU (BM09)
+    ============================================================ */
+    let dataCache = [];
+
     function updatePageNumbers() {
-      // Tính toán số trang (trong trường hợp phức tạp có thể tính dựa trên chiều dài nội dung)
-      // Ở đây chúng ta giả định chỉ có 1 trang
-      totalPages = 1;
-      currentPage = 1;
-      
-      document.querySelector('.current-page').innerText = currentPage;
-      document.querySelector('.total-pages').innerText = totalPages;
+      document.querySelector('.current-page').innerText = 1;
+      document.querySelector('.total-pages').innerText  = 1;
     }
 
     async function loadData() {
       const tbody = document.querySelector("#docTable tbody");
-      tbody.innerHTML = `<tr><td colspan="5">Đang tải dữ liệu...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
       try {
-        const res = await fetch(url);
+        const res = await fetch(URL_CAMKET);
         if (!res.ok) throw new Error(`Lỗi mạng: ${res.statusText}`);
         dataCache = await res.json();
-        renderTable(dataCache);
+        renderCamKet(dataCache);
         populateDateFilter();
         updateSignatureDate();
         updatePageNumbers();
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Không tải được dữ liệu: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">❌ Không tải được dữ liệu: ${err.message}</td></tr>`;
       }
     }
 
-    function renderTable(data) {
+    function renderCamKet(data) {
       const tbody = document.querySelector("#docTable tbody");
       tbody.innerHTML = "";
-      if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Không có tài liệu nào cho ngày đã chọn.</td></tr>`;
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#888;">Không có tài liệu nào.</td></tr>`;
         return;
       }
       data.forEach((item, i) => {
-        const date = new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN");
+        const date = item.ngay_ban_hanh ? new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN") : '';
         tbody.innerHTML += `
           <tr>
             <td>${i + 1}</td>
-            <td>${item.ten_tai_lieu}</td>
-            <td>${item.phien_ban}</td>
-            <td>${item.ma_tai_lieu}</td>
+            <td>${item.ten_tai_lieu || ''}</td>
+            <td>${item.phien_ban || ''}</td>
+            <td>${item.ma_tai_lieu || ''}</td>
             <td>${date}</td>
-          </tr>
-        `;
+          </tr>`;
       });
     }
 
     function populateDateFilter() {
       const select = document.getElementById("dateFilter");
       const dates = [...new Set(dataCache.map(item =>
-        new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN")
-      ))];
+        item.ngay_ban_hanh ? new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN") : ''
+      ).filter(Boolean))];
       dates.sort((a, b) => {
         const [dayA, monthA, yearA] = a.split('/');
         const [dayB, monthB, yearB] = b.split('/');
         return new Date(`${yearB}-${monthB}-${dayB}`) - new Date(`${yearA}-${monthA}-${dayA}`);
       });
       select.innerHTML = '<option value="">-- Lọc theo ngày ban hành --</option>';
-      dates.forEach(date => {
-        select.innerHTML += `<option value="${date}">${date}</option>`;
-      });
+      dates.forEach(d => { select.innerHTML += `<option value="${d}">${d}</option>`; });
     }
 
     function updateSignatureDate(selectedDate) {
-      const dateElement = document.getElementById("signatureLocationDate");
-      let dateToDisplay;
+      const el = document.getElementById("signatureLocationDate");
+      let txt;
       if (selectedDate) {
-        const parts = selectedDate.split('/');
-        const day = parts[0];
-        const month = parts[1];
-        const year = parts[2];
-        dateToDisplay = `ngày ${day} tháng ${month} năm ${year}`;
+        const [d, m, y] = selectedDate.split('/');
+        txt = `ngày ${d} tháng ${m} năm ${y}`;
       } else {
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = today.getFullYear();
-        dateToDisplay = `ngày ${day} tháng ${month} năm ${year}`;
+        txt = `ngày ${String(today.getDate()).padStart(2,'0')} tháng ${String(today.getMonth()+1).padStart(2,'0')} năm ${today.getFullYear()}`;
       }
-      dateElement.innerText = `Hà Giang 2, ${dateToDisplay}`;
+      el.innerText = `Hà Giang 2, ${txt}`;
     }
 
     function filterByDate() {
-      const selectedDate = document.getElementById("dateFilter").value;
-      updateSignatureDate(selectedDate);
-      if (!selectedDate) {
-        renderTable(dataCache);
-        return;
-      }
-      const filtered = dataCache.filter(item =>
-        new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN") === selectedDate
-      );
-      renderTable(filtered);
+      const sel = document.getElementById("dateFilter").value;
+      updateSignatureDate(sel);
+      if (!sel) { renderCamKet(dataCache); return; }
+      renderCamKet(dataCache.filter(item =>
+        item.ngay_ban_hanh && new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN") === sel
+      ));
     }
 
     function updateName() {
       const name = document.getElementById("nameSelect").value || "..................................";
       document.getElementById("personName").innerText = name;
-      document.getElementById("signName").innerText = name;
+      document.getElementById("signName").innerText   = name;
     }
 
     function toggleAdjustmentPanel() {
@@ -486,38 +1007,277 @@
     }
 
     function adjustFooterPosition() {
-      const value = document.getElementById('footerBottom').value;
-      document.querySelector('.editable-footer').style.bottom = value + 'cm';
-      document.querySelectorAll('.repeating-print-footer').forEach(el => {
-        el.style.bottom = value + 'cm';
-      });
+      document.getElementById('camket-footer').style.bottom = document.getElementById('footerBottom').value + 'cm';
     }
 
     function adjustContentMargin() {
-      const value = document.getElementById('contentBottom').value;
-      document.querySelector('.content').style.marginBottom = value + 'px';
+      document.querySelector('.content-camket').style.marginBottom = document.getElementById('contentBottom').value + 'px';
     }
 
     function adjustSignatureMargin() {
-      const value = document.getElementById('signatureTop').value;
-      document.querySelector('.signature-container').style.marginTop = value + 'px';
+      document.querySelector('.signature-container').style.marginTop = document.getElementById('signatureTop').value + 'px';
     }
 
     function resetAdjustments() {
-      document.getElementById('footerBottom').value = 0.5;
+      document.getElementById('footerBottom').value  = 0.5;
       document.getElementById('contentBottom').value = 60;
-      document.getElementById('signatureTop').value = 40;
-      
-      document.querySelector('.editable-footer').style.bottom = '0.5cm';
-      document.querySelectorAll('.repeating-print-footer').forEach(el => {
-        el.style.bottom = '0.5cm';
-      });
-      document.querySelector('.content').style.marginBottom = '60px';
-      document.querySelector('.signature-container').style.marginTop = '40px';
+      document.getElementById('signatureTop').value  = 40;
+      document.getElementById('camket-footer').style.bottom             = '0.5cm';
+      document.querySelector('.content-camket').style.marginBottom     = '60px';
+      document.querySelector('.signature-container').style.marginTop   = '40px';
     }
 
-    // Khởi tạo
+    /* ============================================================
+       MODULE 2: DANH MỤC TÀI LIỆU NỘI BỘ (BM03)
+    ============================================================ */
+    let dmCacheAll = [];
+
+    async function loadDanhMuc() {
+      const tbody = document.querySelector("#dm-table tbody");
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
+      try {
+        const res = await fetch(URL_DANHMUC);
+        if (!res.ok) throw new Error(`Lỗi: ${res.statusText}`);
+        dmCacheAll = await res.json();
+        renderDanhMuc(dmCacheAll);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">❌ Không tải được: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderDanhMuc(data) {
+      const tbody = document.querySelector("#dm-table tbody");
+      tbody.innerHTML = "";
+      if (!data || !data.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#888;">Không có dữ liệu.</td></tr>`;
+        return;
+      }
+      data.forEach((item, i) => {
+        const date = item.ngay_ban_hanh ? new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN") : '';
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td class="text-left">${item.ten_tai_lieu || ''}</td>
+            <td>${item.ma_tai_lieu || ''}</td>
+            <td>${item.phien_ban || ''}</td>
+            <td>${item.lan_ban_hanh || ''}</td>
+            <td>${date}</td>
+            <td>${item.so_luong_ban_sao || ''}</td>
+          </tr>`;
+      });
+    }
+
+    function filterDanhMuc() {
+      const tu   = document.getElementById("dm-tuNgay").value;
+      const den  = document.getElementById("dm-denNgay").value;
+      renderDanhMuc(filterByDateRange(dmCacheAll, 'ngay_ban_hanh', tu, den));
+    }
+
+    /* ============================================================
+       MODULE 3: SỔ PHÂN PHỐI TÀI LIỆU (BM04)
+    ============================================================ */
+    let ppCacheAll = [];
+
+    async function loadPhanPhoi() {
+      const tbody = document.querySelector("#pp-table tbody");
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
+      try {
+        const res = await fetch(URL_PHANPHOI);
+        if (!res.ok) throw new Error(`Lỗi: ${res.statusText}`);
+        ppCacheAll = await res.json();
+        renderPhanPhoi(ppCacheAll);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" style="color:red; text-align:center;">❌ Không tải được: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderPhanPhoi(data) {
+      const tbody = document.querySelector("#pp-table tbody");
+      tbody.innerHTML = "";
+      if (!data || !data.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#888;">Không có dữ liệu.</td></tr>`;
+        return;
+      }
+      data.forEach((item, i) => {
+        const ngayBH  = item.ngay_ban_hanh      ? new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN")      : '';
+        const ngayPP  = item.ngay_phan_phoi     ? new Date(item.ngay_phan_phoi).toLocaleDateString("vi-VN")     : '';
+        const ngayNTL = item.ngay_nhan_tai_lieu ? new Date(item.ngay_nhan_tai_lieu).toLocaleDateString("vi-VN") : '';
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td class="text-left">${item.ten_tai_lieu || ''}</td>
+            <td>${item.ma_tai_lieu || ''}</td>
+            <td>${ngayBH}</td>
+            <td>${item.phien_ban || ''}</td>
+            <td>${ngayPP}</td>
+            <td class="text-left">${item.nguoi_phan_phoi || ''}</td>
+            <td class="text-left">${item.don_vi_nguoi_nhan || ''}</td>
+            <td>${ngayNTL}</td>
+          </tr>`;
+      });
+    }
+
+    function filterPhanPhoi() {
+      const tu  = document.getElementById("pp-tuNgay").value;
+      const den = document.getElementById("pp-denNgay").value;
+      renderPhanPhoi(filterByDateRange(ppCacheAll, 'ngay_ban_hanh', tu, den));
+    }
+
+    /* ============================================================
+       MODULE 4: SỔ THU HỒI TÀI LIỆU (BM08)
+    ============================================================ */
+    let thCacheAll = [];
+
+    async function loadThuHoi() {
+      const tbody = document.querySelector("#th-table tbody");
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
+      try {
+        const res = await fetch(URL_THUHO);
+        if (!res.ok) throw new Error(`Lỗi: ${res.statusText}`);
+        thCacheAll = await res.json();
+        renderThuHoi(thCacheAll);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" style="color:red; text-align:center;">❌ Không tải được: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderThuHoi(data) {
+      const tbody = document.querySelector("#th-table tbody");
+      tbody.innerHTML = "";
+      if (!data || !data.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#888;">Không có dữ liệu.</td></tr>`;
+        return;
+      }
+      data.forEach((item, i) => {
+        const ngayTH = item.ngay_thu_hoi ? new Date(item.ngay_thu_hoi).toLocaleDateString("vi-VN") : (item.ngay_thu_hoi || '');
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td class="text-left">${item.ten_tai_lieu || ''}</td>
+            <td>${item.ma_tai_lieu || ''}</td>
+            <td>${item.ngay_ban_hanh_va_phien_ban || ''}</td>
+            <td class="text-left">${item.ly_do_thu_hoi || ''}</td>
+            <td>${ngayTH}</td>
+            <td>${item.so_luong_thu_hoi || ''}</td>
+            <td>${item.nguoi_thuc_hien || ''}</td>
+            <td></td>
+          </tr>`;
+      });
+    }
+
+    function filterThuHoi() {
+      const tu  = document.getElementById("th-tuNgay").value;
+      const den = document.getElementById("th-denNgay").value;
+      // BM08: lọc theo ngày thu hồi (trường duy nhất có date riêng)
+      renderThuHoi(filterByDateRange(thCacheAll, 'ngay_thu_hoi', tu, den));
+    }
+
+    /* ============================================================
+       MODULE 5: KẾ HOẠCH SOÁT XÉT TÀI LIỆU (BM05)
+       - Dùng lại API danh mục
+       - Ngày soát xét dự kiến = dd/mm của ngày ban hành + năm hiện tại
+       - Người thực hiện & Ghi chú: để trống
+    ============================================================ */
+    let sxCacheAll = [];
+    const CURRENT_YEAR = new Date().getFullYear();
+
+    async function loadSoatXet() {
+      const tbody = document.querySelector("#sx-table tbody");
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
+      document.getElementById('sx-current-year').innerText = CURRENT_YEAR;
+
+      try {
+        const res = await fetch(URL_SOATXET);
+        if (!res.ok) throw new Error(`Lỗi: ${res.statusText}`);
+        const raw = await res.json();
+
+        // Transform: tính Ngày soát xét dự kiến = dd/mm + năm hiện tại
+        sxCacheAll = raw.map(item => {
+          let ngaySoatXet = '';
+          let ngaySoatXetISO = '';
+          if (item.ngay_ban_hanh) {
+            try {
+              const d = new Date(item.ngay_ban_hanh);
+              if (!isNaN(d.getTime())) {
+                ngaySoatXet    = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${CURRENT_YEAR}`;
+                ngaySoatXetISO = `${CURRENT_YEAR}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+              }
+            } catch (e) { /* skip */ }
+          }
+          return { ...item, ngay_soat_xet: ngaySoatXet, ngay_soat_xet_iso: ngaySoatXetISO };
+        });
+
+        renderSoatXet(sxCacheAll);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">❌ Không tải được: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderSoatXet(data) {
+      const tbody = document.querySelector("#sx-table tbody");
+      tbody.innerHTML = "";
+      if (!data || !data.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888;">Không có dữ liệu.</td></tr>`;
+        return;
+      }
+      data.forEach((item, i) => {
+        const ngayBH = item.ngay_ban_hanh ? new Date(item.ngay_ban_hanh).toLocaleDateString("vi-VN") : '';
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td class="text-left">${item.ten_tai_lieu || ''}</td>
+            <td>${item.ma_tai_lieu || ''}</td>
+            <td>${item.phien_ban || ''}</td>
+            <td>${ngayBH}</td>
+            <td><strong>${item.ngay_soat_xet || ''}</strong></td>
+            <td></td>
+            <td></td>
+          </tr>`;
+      });
+    }
+
+    function filterSoatXet() {
+      const tu  = document.getElementById("sx-tuNgay").value;
+      const den = document.getElementById("sx-denNgay").value;
+      // Lọc theo ngày ban hành gốc (ISO field)
+      const filtered = filterByDateRange(sxCacheAll, 'ngay_ban_hanh', tu, den);
+      // Cập nhật label năm
+      document.getElementById('sx-current-year').innerText = tu ? tu.substring(0,4) : CURRENT_YEAR;
+      renderSoatXet(filtered);
+    }
+
+    /* ============================================================
+       HELPER: LỌC THEO KHOẢNG NGÀY (date range)
+       field: tên field ISO date trong object
+       tuNgay, denNgay: chuỗi "YYYY-MM-DD" từ <input type="date">
+    ============================================================ */
+    function filterByDateRange(data, field, tuNgay, denNgay) {
+      if (!tuNgay && !denNgay) return data;
+      return data.filter(item => {
+        if (!item[field]) return false;
+        try {
+          const d = new Date(item[field]);
+          if (isNaN(d.getTime())) return false;
+          const dISO = d.toISOString().substring(0, 10); // "YYYY-MM-DD"
+          if (tuNgay  && dISO < tuNgay)  return false;
+          if (denNgay && dISO > denNgay) return false;
+          return true;
+        } catch { return false; }
+      });
+    }
+
+    function clearDateFilter(idTu, idDen, renderFn, cache) {
+      document.getElementById(idTu).value  = '';
+      document.getElementById(idDen).value = '';
+      renderFn(cache);
+    }
+
+    /* ============================================================
+       INIT - Tải dữ liệu module 1 khi mở trang
+    ============================================================ */
     loadData();
+
   </script>
+
 </body>
 </html>
