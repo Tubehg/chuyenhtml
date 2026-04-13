@@ -110,6 +110,15 @@
       background: #2471a3;
     }
 
+    button.btn-word {
+      background: #8e44ad;
+      color: #fff;
+    }
+
+    button.btn-word:hover {
+      background: #732d91;
+    }
+
     /* ============================================================
        A4 CONTAINER - PORTRAIT (Module 1)
     ============================================================ */
@@ -426,6 +435,7 @@
 
     <div class="button-group">
       <button class="btn-print" onclick="printModule('tab-camket', 'portrait')">🖨️ In Phiếu</button>
+      <button class="btn-word" onclick="exportModuleToWord('tab-camket', 'portrait', 'Phieu_Cam_Ket_BM09')">📥 Xuất Word</button>
       <select id="dateFilter" onchange="filterByDate()">
         <option value="">-- Lọc theo ngày ban hành --</option>
       </select>
@@ -537,13 +547,20 @@
 
     <div class="button-group">
       <button class="btn-print" onclick="printModule('tab-danhmuc', 'landscape')">🖨️ In Danh Mục</button>
+      <button class="btn-word" onclick="exportModuleToWord('tab-danhmuc', 'landscape', 'Danh_Muc_Tai_Lieu_BM03')">📥 Xuất Word</button>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
         Từ ngày: <input type="date" id="dm-tuNgay" onchange="filterDanhMuc()" style="padding:3px;font-family:inherit;">
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
         Đến ngày: <input type="date" id="dm-denNgay" onchange="filterDanhMuc()" style="padding:3px;font-family:inherit;">
       </label>
-      <button onclick="clearDateFilter('dm-tuNgay','dm-denNgay',renderDanhMuc,dmCacheAll)" style="background:#e67e22;">✕ Xóa lọc</button>
+      <select id="dm-chuong" onchange="filterDanhMuc()">
+        <option value="">-- Chương tài liệu --</option>
+      </select>
+      <select id="dm-nhom" onchange="filterDanhMuc()">
+        <option value="">-- Nhóm tài liệu --</option>
+      </select>
+      <button onclick="clearAllFiltersDM()" style="background:#e67e22;">✕ Xóa lọc</button>
       <button onclick="loadDanhMuc()">🔄 Làm mới</button>
     </div>
 
@@ -603,6 +620,7 @@
 
     <div class="button-group">
       <button class="btn-print" onclick="printModule('tab-phanphoi', 'landscape')">🖨️ In Sổ Phân Phối</button>
+      <button class="btn-word" onclick="exportModuleToWord('tab-phanphoi', 'landscape', 'So_Phan_Phoi_Tai_Lieu_BM04')">📥 Xuất Word</button>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
         Từ ngày: <input type="date" id="pp-tuNgay" onchange="filterPhanPhoi()" style="padding:3px;font-family:inherit;">
       </label>
@@ -671,6 +689,7 @@
 
     <div class="button-group">
       <button class="btn-print" onclick="printModule('tab-thuho', 'landscape')">🖨️ In Sổ Thu Hồi</button>
+      <button class="btn-word" onclick="exportModuleToWord('tab-thuho', 'landscape', 'So_Thu_Hoi_Tai_Lieu_BM08')">📥 Xuất Word</button>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
         Từ ngày: <input type="date" id="th-tuNgay" onchange="filterThuHoi()" style="padding:3px;font-family:inherit;">
       </label>
@@ -739,13 +758,20 @@
 
     <div class="button-group">
       <button class="btn-print" onclick="printModule('tab-soatxet', 'landscape')">🖨️ In Kế Hoạch</button>
+      <button class="btn-word" onclick="exportModuleToWord('tab-soatxet', 'landscape', 'Ke_Hoach_Soat_Xet_Tai_Lieu_BM05')">📥 Xuất Word</button>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
         Từ ngày: <input type="date" id="sx-tuNgay" onchange="filterSoatXet()" style="padding:3px;font-family:inherit;">
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;background:#fff;padding:6px 10px;border:1px solid #ccc;border-radius:4px;">
         Đến ngày: <input type="date" id="sx-denNgay" onchange="filterSoatXet()" style="padding:3px;font-family:inherit;">
       </label>
-      <button onclick="clearDateFilter('sx-tuNgay','sx-denNgay',renderSoatXet,sxCacheAll)" style="background:#e67e22;">✕ Xóa lọc</button>
+      <select id="sx-chuong" onchange="filterSoatXet()">
+        <option value="">-- Chương tài liệu --</option>
+      </select>
+      <select id="sx-nhom" onchange="filterSoatXet()">
+        <option value="">-- Nhóm tài liệu --</option>
+      </select>
+      <button onclick="clearAllFiltersSX()" style="background:#e67e22;">✕ Xóa lọc</button>
       <button onclick="loadSoatXet()">🔄 Làm mới</button>
     </div>
 
@@ -1039,6 +1065,10 @@
         const res = await fetch(URL_DANHMUC);
         if (!res.ok) throw new Error(`Lỗi: ${res.statusText}`);
         dmCacheAll = await res.json();
+        
+        populateFilterList('dm-chuong', dmCacheAll, 'chuong_tai_lieu', '-- Chương tài liệu --');
+        populateFilterList('dm-nhom', dmCacheAll, 'nhom_tai_lieu', '-- Nhóm tài liệu --');
+        
         renderDanhMuc(dmCacheAll);
       } catch (err) {
         tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">❌ Không tải được: ${err.message}</td></tr>`;
@@ -1070,7 +1100,22 @@
     function filterDanhMuc() {
       const tu   = document.getElementById("dm-tuNgay").value;
       const den  = document.getElementById("dm-denNgay").value;
-      renderDanhMuc(filterByDateRange(dmCacheAll, 'ngay_ban_hanh', tu, den));
+      const chuong = document.getElementById("dm-chuong").value;
+      const nhom = document.getElementById("dm-nhom").value;
+
+      let filtered = filterByDateRange(dmCacheAll, 'ngay_ban_hanh', tu, den);
+      if (chuong) filtered = filtered.filter(item => item.chuong_tai_lieu === chuong);
+      if (nhom) filtered = filtered.filter(item => item.nhom_tai_lieu === nhom);
+
+      renderDanhMuc(filtered);
+    }
+
+    function clearAllFiltersDM() {
+      document.getElementById('dm-tuNgay').value = "";
+      document.getElementById('dm-denNgay').value = "";
+      document.getElementById('dm-chuong').value = "";
+      document.getElementById('dm-nhom').value = "";
+      filterDanhMuc();
     }
 
     /* ============================================================
@@ -1207,6 +1252,9 @@
           return { ...item, ngay_soat_xet: ngaySoatXet, ngay_soat_xet_iso: ngaySoatXetISO };
         });
 
+        populateFilterList('sx-chuong', sxCacheAll, 'chuong_tai_lieu', '-- Chương tài liệu --');
+        populateFilterList('sx-nhom', sxCacheAll, 'nhom_tai_lieu', '-- Nhóm tài liệu --');
+
         renderSoatXet(sxCacheAll);
       } catch (err) {
         tbody.innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">❌ Không tải được: ${err.message}</td></tr>`;
@@ -1239,11 +1287,25 @@
     function filterSoatXet() {
       const tu  = document.getElementById("sx-tuNgay").value;
       const den = document.getElementById("sx-denNgay").value;
+      const chuong = document.getElementById("sx-chuong").value;
+      const nhom = document.getElementById("sx-nhom").value;
+
       // Lọc theo ngày ban hành gốc (ISO field)
-      const filtered = filterByDateRange(sxCacheAll, 'ngay_ban_hanh', tu, den);
+      let filtered = filterByDateRange(sxCacheAll, 'ngay_ban_hanh', tu, den);
+      if (chuong) filtered = filtered.filter(item => item.chuong_tai_lieu === chuong);
+      if (nhom) filtered = filtered.filter(item => item.nhom_tai_lieu === nhom);
+
       // Cập nhật label năm
       document.getElementById('sx-current-year').innerText = tu ? tu.substring(0,4) : CURRENT_YEAR;
       renderSoatXet(filtered);
+    }
+
+    function clearAllFiltersSX() {
+      document.getElementById('sx-tuNgay').value = "";
+      document.getElementById('sx-denNgay').value = "";
+      document.getElementById('sx-chuong').value = "";
+      document.getElementById('sx-nhom').value = "";
+      filterSoatXet();
     }
 
     /* ============================================================
@@ -1270,6 +1332,134 @@
       document.getElementById(idTu).value  = '';
       document.getElementById(idDen).value = '';
       renderFn(cache);
+    }
+
+    function populateFilterList(selectId, data, field, defaultText) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const uniqueValues = [...new Set(data.map(item => item[field]).filter(Boolean))].sort();
+      select.innerHTML = `<option value="">${defaultText}</option>`;
+      uniqueValues.forEach(val => {
+        select.innerHTML += `<option value="${val}">${val}</option>`;
+      });
+    }
+
+    /* ============================================================
+       EXPORT TO WORD FUNCTION
+    ============================================================ */
+    function exportModuleToWord(tabId, orientation, fileName) {
+      const tabEl = document.getElementById(tabId);
+      if (!tabEl) return;
+      
+      let contentEl = tabEl.querySelector('.a4-portrait');
+      if (!contentEl) contentEl = tabEl.querySelector('.a4-landscape');
+      if (!contentEl) return;
+
+      // 1. Trích xuất văn bản làm Footer (Mã, Ngày ban hành, Phiên bản)
+      let footerLeft = "";
+      let footerCenter = "";
+      let footerRight = "";
+
+      if (tabId === 'tab-camket') {
+        footerLeft = document.getElementById('edit-footer-1') ? document.getElementById('edit-footer-1').innerText : "";
+        footerCenter = document.getElementById('edit-footer-2') ? document.getElementById('edit-footer-2').innerText : "";
+        footerRight = document.getElementById('edit-footer-3') ? document.getElementById('edit-footer-3').innerText : "";
+      } else {
+        const footerMap = {
+          'tab-danhmuc' : ['dm-footer-1','dm-footer-2','dm-footer-3'],
+          'tab-phanphoi': ['pp-footer-1','pp-footer-2','pp-footer-3'],
+          'tab-thuho'   : ['th-footer-1','th-footer-2','th-footer-3'],
+          'tab-soatxet' : ['sx-footer-1','sx-footer-2','sx-footer-3']
+        };
+        if(footerMap[tabId]) {
+          const [id1, id2, id3] = footerMap[tabId];
+          footerLeft   = document.getElementById(id1) ? document.getElementById(id1).innerText : "";
+          footerCenter = document.getElementById(id2) ? document.getElementById(id2).innerText : "";
+          footerRight  = document.getElementById(id3) ? document.getElementById(id3).innerText : "";
+        }
+      }
+
+      // 2. Clone nội dung giao diện và dọn dẹp các control/script không cần thiết
+      const clone = contentEl.cloneNode(true);
+      
+      const docFooter = clone.querySelector('.doc-footer');
+      if (docFooter) docFooter.remove(); // Xóa footer mô phỏng ở giao diện, ta sẽ dùng Footer thực của Word
+      
+      clone.querySelectorAll('style, script, .repeating-print-footer, .landscape-print-footer, button, input, select').forEach(el => el.remove());
+      
+      // Inline style bảng biểu để giữ nguyên khung khi dán vào Word
+      clone.querySelectorAll('table').forEach(table => {
+        table.style.borderCollapse = 'collapse';
+        table.style.width = '100%';
+        table.style.marginBottom = '15px';
+      });
+      clone.querySelectorAll('th, td').forEach(cell => {
+        cell.style.border = '1px solid black';
+        cell.style.padding = '5px 7px';
+      });
+
+      const rawHtml = clone.innerHTML;
+
+      // 3. Khởi tạo template Word (HTML Word XML namespace mode)
+      const pageSize = orientation === 'landscape' ? 'size:841.9pt 595.3pt; mso-page-orientation:landscape;' : 'size:595.3pt 841.9pt;';
+      
+      const htmlTemplate = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+            xmlns:w="urn:schemas-microsoft-com:office:word" 
+            xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+          <meta charset="utf-8">
+          <style>
+              @page WordSection1 {
+                  ${pageSize}
+                  margin: 72.0pt 72.0pt 72.0pt 72.0pt;
+                  mso-header-margin: 36.0pt;
+                  mso-footer-margin: 36.0pt;
+                  mso-footer: f1;
+              }
+              div.WordSection1 { page: WordSection1; }
+              body { font-family: "Times New Roman", serif; font-size: 13px; }
+              
+              /* Định dạng MsoFooter */
+              p.MsoFooter, li.MsoFooter, div.MsoFooter {
+                  margin: 0cm;
+                  font-size: 11pt;
+                  font-family: "Times New Roman", serif;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="WordSection1">
+              ${rawHtml}
+          </div>
+          
+          <!-- Cấu trúc đóng chết Footer của file Word -->
+          <div style="mso-element:footer" id="f1">
+              <table width="100%" style="width:100%; border:none; border-top:1px solid #aaa; padding-top:4px;">
+                  <tr>
+                      <td style="border:none; text-align:left; font-size:11px;">${footerLeft}</td>
+                      <td style="border:none; text-align:center; font-size:11px;">${footerCenter}</td>
+                      <td style="border:none; text-align:right; font-size:11px;">${footerRight}</td>
+                  </tr>
+              </table>
+          </div>
+      </body>
+      </html>
+      `;
+
+      // 4. Triger tải file
+      const blob = new Blob(['\ufeff', htmlTemplate], {
+          type: 'application/msword;charset=utf-8'
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName + '.doc';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
 
     /* ============================================================
