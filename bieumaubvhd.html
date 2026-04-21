@@ -390,7 +390,11 @@
   function buildTableHtml(metric, startDay, endDay) {
     const numDays = endDay - startDay + 1;
     const numCols = numDays * 2;
-    const lbl     = metric === 1 ? 'Nhiệt&nbsp;độ<br>(°C)' : 'Độ&nbsp;ẩm<br>(%)';
+
+    /* Label được render với span có class → có thể update sau khi chọn TB */
+    const lbl = metric === 1
+      ? `<span class="m1-name">Nhiệt&nbsp;độ</span><br>(<span class="m1-dvt">°C</span>)`
+      : `<span class="m2-name">Độ&nbsp;ẩm</span><br>(<span class="m2-dvt">%</span>)`;
 
     /* Row 1: measure label (rowspan=4) + Tháng/Năm header */
     let h = `<table class="phieu-table" style="height:100%;"><tbody>
@@ -535,16 +539,36 @@
     });
 
     if (tbInfo) {
+      /* ─── Cập nhật tên đại lượng + đơn vị trong header bảng ─── */
+      const tenND1 = String(tbInfo.ten_dai_nd_1 || '').trim() || 'Nhiệt độ';
+      const dvt1   = String(tbInfo.dvt_1       || '').trim() || '°C';
+      const tenND2 = String(tbInfo.ten_dai_nd_2 || '').trim() || 'Độ ẩm';
+      const dvt2   = String(tbInfo.dvt_2       || '').trim() || '%';
+
+      /* Cập nhật tất cả span trong cả 4 bảng */
+      document.querySelectorAll('.m1-name').forEach(el => el.textContent = tenND1);
+      document.querySelectorAll('.m1-dvt').forEach(el => el.textContent  = dvt1);
+      document.querySelectorAll('.m2-name').forEach(el => el.textContent = tenND2);
+      document.querySelectorAll('.m2-dvt').forEach(el => el.textContent  = dvt2);
+
+      /* ─── Giới hạn Nhiệt độ ─── */
       if (tbInfo.min_1 || tbInfo.max_1)
-        document.getElementById('ipt-khoang-nd').value = `${tbInfo.min_1 || '...'}°C - ${tbInfo.max_1 || '...'}°C`;
+        document.getElementById('ipt-khoang-nd').value = `${tbInfo.min_1 || '...'}${dvt1} - ${tbInfo.max_1 || '...'}${dvt1}`;
+      /* ─── Mã số ─── */
       if (tbInfo.ma_so_thiet_bi) {
         document.getElementById('ipt-ma-nd').value = tbInfo.ma_so_thiet_bi;
         document.getElementById('ipt-ma-da').value = tbInfo.ma_so_thiet_bi;
       }
-      if (tbInfo.min_2 || tbInfo.max_2) {
-        const dvt = tbInfo.dvt_2 || '%';
-        document.getElementById('ipt-khoang-da').value = `${tbInfo.min_2 || '...'}${dvt} - ${tbInfo.max_2 || '...'}${dvt}`;
-      }
+      /* ─── Giới hạn Độ ẩm ─── */
+      if (tbInfo.min_2 || tbInfo.max_2)
+        document.getElementById('ipt-khoang-da').value = `${tbInfo.min_2 || '...'}${dvt2} - ${tbInfo.max_2 || '...'}${dvt2}`;
+
+    } else {
+      /* Không tìm thấy → reset về giá trị mặc định */
+      document.querySelectorAll('.m1-name').forEach(el => el.textContent = 'Nhiệt độ');
+      document.querySelectorAll('.m1-dvt').forEach(el => el.textContent  = '°C');
+      document.querySelectorAll('.m2-name').forEach(el => el.textContent = 'Độ ẩm');
+      document.querySelectorAll('.m2-dvt').forEach(el => el.textContent  = '%');
     }
   }
 
