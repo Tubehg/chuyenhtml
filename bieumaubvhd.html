@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phiếu Theo Dõi Nhiệt Độ, Độ Ẩm - BV ĐK Hà Đông</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Times New Roman", Times, serif;
+      background: #e0e0e0;
+    }
+
+    /* ============================================================
+       TOOLBAR
+    ============================================================ */
+    .toolbar {
+      display: flex;
+      background: #2c3e50;
+      padding: 8px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .toolbar-title {
+      color: #ecf0f1;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    button, select {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    button             { background: #27ae60; color: #fff; border: none; }
+    button:hover       { background: #219a52; }
+    button.btn-print   { background: #2980b9; }
+    button.btn-print:hover { background: #2471a3; }
+    button.btn-word    { background: #8e44ad; }
+    button.btn-word:hover  { background: #732d91; }
+    button.btn-reload  { background: #16a085; }
+    button.btn-reload:hover { background: #138d75; }
+
+    select { background: #fff; }
+
+    /* ============================================================
+       PAGE WRAPPER
+    ============================================================ */
+    .page-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 8px 36px;
+    }
+
+    /* ============================================================
+       A4 LANDSCAPE (29.7 × 21 cm)
+       Padding tối thiểu để bảng chiếm tối đa diện tích
+    ============================================================ */
+    .a4-landscape {
+      width: 29.7cm;
+      height: 21cm;          /* Cố định chiều cao đúng A4 ngang */
+      padding: 0.4cm 0.5cm 0.9cm 0.5cm;
+      background: #fff;
+      box-shadow: 0 0 14px rgba(0,0,0,0.2);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;              /* Giảm gap xuống mức tối thiểu */
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       DOCUMENT HEADER — BV | KHOA | Mã BM
+    ============================================================ */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .hdr-bv   { font-size: 10px; font-weight: bold; text-transform: uppercase; }
+
+    .hdr-khoa {
+      font-size: 10px;
+      white-space: nowrap;
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+
+    .khoa-input {
+      border: none;
+      border-bottom: 1px solid #333;
+      outline: none;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 10px;
+      width: 155px;
+      color: #000;
+    }
+
+    .hdr-bm { font-size: 10px; font-style: italic; text-align: right; white-space: nowrap; }
+
+    /* ============================================================
+       TITLE
+    ============================================================ */
+    .doc-title {
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       PHÒNG + INFO ROWS
+    ============================================================ */
+    .phong-row { font-size: 10px; flex-shrink: 0; }
+
+    .info-row {
+      font-size: 9.5px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: baseline;
+      flex-shrink: 0;
+    }
+
+    .ipt {
+      border: none;
+      border-bottom: 1px dotted #666;
+      outline: none;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 9.5px;
+      color: #000;
+      background: transparent;
+    }
+
+    /* ============================================================
+       PHIẾU TABLE
+       Cấu trúc 6 dòng tbody mỗi bảng:
+         Row 1: [lbl-col rowspan=4] | [month-header colspan=N]
+         Row 2: [day headers colspan=2]
+         Row 3: [S / C sub-headers] (mỗi ngày 2 ô)
+         Row 4: [data cells] ← fill bởi JS
+         Row 5: [Ký nhận] ← 2 ô riêng per ngày (S và C)
+         Row 6: [Ghi chú] ← 2 ô riêng per ngày
+    ============================================================ */
+    .phieu-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      flex: 1;           /* Mỗi bảng chiếm phần còn lại đều nhau */
+    }
+
+    .phieu-table td {
+      border: 1px solid #000;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 7px;
+      line-height: 1.1;
+      padding: 0 1px;
+      overflow: hidden;
+    }
+
+    /* Cột nhãn trái */
+    .phieu-table .lbl-col {
+      width: 36px;
+      min-width: 36px;
+      max-width: 36px;
+      font-size: 7.5px;
+      font-weight: bold;
+      word-break: break-word;
+    }
+
+    .phieu-table .lbl-col.lbl-sub {
+      font-size: 7.5px;
+      font-weight: normal;
+      text-align: left;
+      padding-left: 2px;
+    }
+
+    .phieu-table .lbl-col.lbl-sub.bold { font-weight: bold; }
+
+    /* Tháng/Năm header */
+    .phieu-table .month-hdr {
+      font-size: 7.5px;
+      font-style: italic;
+      background: #fafafa;
+    }
+
+    /* Số ngày */
+    .phieu-table .day-hdr {
+      font-size: 8.5px;
+      font-weight: bold;
+      background: #f2f2f2;
+    }
+
+    /* S / C */
+    .phieu-table .buoi-hdr {
+      font-size: 7px;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    /* Ô dữ liệu nhiệt độ / độ ẩm */
+    .phieu-table .data-cell { font-size: 8px; }
+
+    /* Ô ký nhận (1 ô per buổi = S hoặc C) */
+    .phieu-table .ky-cell {
+      font-size: 6.5px;
+      color: #222;
+    }
+
+    /* Ô ghi chú */
+    .phieu-table .gc-cell { font-size: 7px; }
+
+    /* Tô đỏ ngoài giới hạn */
+    .phieu-table .out-of-range {
+      background: #ffe0e0 !important;
+      color: #c0392b;
+      font-weight: bold;
+    }
+
+    /* ============================================================
+       FOOTER MÀN HÌNH
+    ============================================================ */
+    .doc-footer {
+      position: absolute;
+      bottom: 0.25cm;
+      left: 0.5cm;
+      right: 0.5cm;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      border-top: 0.5px solid #999;
+      padding-top: 2px;
+      background: #fff;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .doc-footer span[contenteditable] { outline: none; }
+
+    /* ============================================================
+       PRINT
+    ============================================================ */
+    @media print {
+      .toolbar { display: none !important; }
+      body { background: #fff; }
+      .page-wrapper { padding: 0 !important; align-items: flex-start; }
+      .a4-landscape {
+        width: 100% !important;
+        /* QUAN TRỌNG: giữ height cố định để flex:1 hoạt động khi in */
+        /* A4 landscape = 210mm, margin @page = 0.6cm*2 = 12mm → usable = 198mm */
+        height: 198mm !important;
+        min-height: 0 !important;
+        box-shadow: none;
+        padding: 0.3cm 0.4cm 0.7cm 0.4cm;
+        margin: 0;
+        overflow: hidden;
+        gap: 1px;
+      }
+      .doc-footer { display: none !important; }
+    }
+
+    @page { size: A4 landscape; margin: 0.6cm; }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     TOOLBAR
+============================================================ -->
+<div class="toolbar">
+  <span class="toolbar-title">📋 Phiếu Theo Dõi Nhiệt Độ, Độ Ẩm &nbsp;|&nbsp; BV ĐK Hà Đông</span>
+
+  <select id="sel-thietbi" onchange="onChonTB()">
+    <option value="">⏳ Đang tải thiết bị...</option>
+  </select>
+
+  <select id="sel-thangnam">
+    <option value="">-- Chọn thiết bị trước --</option>
+  </select>
+
+  <button onclick="xemPhieu()">📊 Xem phiếu</button>
+  <button class="btn-reload" onclick="khoiDong()">🔄 Làm mới</button>
+  <button class="btn-print" onclick="inPhieu()">🖨️ In Phiếu</button>
+  <button class="btn-word" onclick="xuatWord()">📥 Xuất Word</button>
+</div>
+
+<!-- ============================================================
+     A4 LANDSCAPE PAGE
+============================================================ -->
+<div class="page-wrapper">
+  <div class="a4-landscape" id="phieu-container">
+
+    <!-- HEADER -->
+    <div class="doc-header">
+      <div class="hdr-bv">BỆNH VIỆN ĐA KHOA HÀ ĐÔNG</div>
+      <div class="hdr-khoa">
+        KHOA:&nbsp;<input type="text" class="khoa-input" id="input-khoa" placeholder="____________________________" />
+      </div>
+      <div class="hdr-bm">BV.QTQL.14.BM.02</div>
+    </div>
+
+    <!-- TITLE -->
+    <div class="doc-title">PHIẾU THEO DÕI NHIỆT ĐỘ, ĐỘ ẨM</div>
+
+    <!-- PHÒNG -->
+    <div class="phong-row">Phòng:&nbsp;&nbsp;<strong id="info-phong">—</strong></div>
+
+    <!-- INFO NHIỆT ĐỘ -->
+    <div class="info-row">
+      <span>Khoảng nhiệt độ dao động cho phép:&nbsp;<input class="ipt" id="ipt-khoang-nd" size="18" value="..." /></span>
+      <span>Mã thiết bị đo:&nbsp;<input class="ipt" id="ipt-ma-nd" size="14" value="..." /></span>
+      <span>Sai số của thiết bị đo:&nbsp;<input class="ipt" id="ipt-sso-nd" size="8" value="..." /></span>
+    </div>
+
+    <!-- BẢNG NHIỆT ĐỘ ngày 1-16 -->
+    <div id="nd-1-16" style="display:flex;flex:1;flex-direction:column;"></div>
+
+    <!-- BẢNG NHIỆT ĐỘ ngày 17-31 -->
+    <div id="nd-17-31" style="display:flex;flex:1;flex-direction:column;"></div>
+
+    <!-- INFO ĐỘ ẨM -->
+    <div class="info-row">
+      <span>Khoảng ẩm dao động cho phép:&nbsp;<input class="ipt" id="ipt-khoang-da" size="18" value="..." /></span>
+      <span>Mã thiết bị đo:&nbsp;<input class="ipt" id="ipt-ma-da" size="14" value="..." /></span>
+      <span>Sai số của thiết bị đo:&nbsp;<input class="ipt" id="ipt-sso-da" size="12" value="..." /></span>
+    </div>
+
+    <!-- BẢNG ĐỘ ẨM ngày 1-16 -->
+    <div id="da-1-16" style="display:flex;flex:1;flex-direction:column;"></div>
+
+    <!-- BẢNG ĐỘ ẨM ngày 17-31 -->
+    <div id="da-17-31" style="display:flex;flex:1;flex-direction:column;"></div>
+
+    <!-- FOOTER màn hình -->
+    <div class="doc-footer">
+      <span id="footer-1" contenteditable="true">BV.QTQL.14.BM.02</span>
+      <span id="footer-2" contenteditable="true">Ngày hiệu lực: 01/01/2025</span>
+      <span id="footer-3" contenteditable="true">1/1</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+
+  /* ============================================================
+     API
+  ============================================================ */
+  const BASE_URL = "https://script.google.com/macros/s/AKfycbyUo3neHRs6hLXZ0UlX335uGGUe_FWRiPC95n1aHYspb12rnqp3P-gppb2ps8ziRQt6vQ/exec";
+
+  /* ============================================================
+     STATE
+  ============================================================ */
+  let allNhietDo = [];
+  let allThietBi = [];
+
+  /* ============================================================
+     BUILD TABLE HTML
+     metric  : 1 = Nhiệt độ | 2 = Độ ẩm
+     startDay: 1 hoặc 17
+     endDay  : 16 hoặc 31
+
+     Cấu trúc ký nhận: mỗi buổi (S và C) có ô riêng
+     → ID: ky{metric}-{day}-s và ky{metric}-{day}-c
+  ============================================================ */
+  function buildTableHtml(metric, startDay, endDay) {
+    const numDays = endDay - startDay + 1;
+    const numCols = numDays * 2;
+    const lbl     = metric === 1 ? 'Nhiệt&nbsp;độ<br>(°C)' : 'Độ&nbsp;ẩm<br>(%)';
+
+    /* Row 1: measure label (rowspan=4) + Tháng/Năm header */
+    let h = `<table class="phieu-table" style="height:100%;"><tbody>
+<tr>
+  <td rowspan="4" class="lbl-col">${lbl}</td>
+  <td colspan="${numCols}" class="month-hdr">
+    Tháng&nbsp;<span class="sp-thang">__</span>&nbsp;năm&nbsp;<span class="sp-nam">____</span>
+  </td>
+</tr>`;
+
+    /* Row 2: Số ngày (colspan=2 mỗi ngày) */
+    h += '<tr>';
+    for (let d = startDay; d <= endDay; d++) h += `<td colspan="2" class="day-hdr">${d}</td>`;
+    h += '</tr>';
+
+    /* Row 3: S / C sub-headers */
+    h += '<tr>';
+    for (let d = startDay; d <= endDay; d++) h += '<td class="buoi-hdr">S</td><td class="buoi-hdr">C</td>';
+    h += '</tr>';
+
+    /* Row 4: Data cells (ket_qua_1 hoặc ket_qua_2) — trong rowspan nên ko có lbl-col */
+    h += '<tr>';
+    for (let d = startDay; d <= endDay; d++) {
+      h += `<td class="data-cell" id="c${metric}-${d}-s"></td>`;
+      h += `<td class="data-cell" id="c${metric}-${d}-c"></td>`;
+    }
+    h += '</tr>';
+
+    /* ─── Row 5: Ký nhận — MỖI Ô cho từng buổi S và C riêng biệt ─── */
+    /* nguoi_theo_doi sẽ được fill bằng lastName(nguoi_theo_doi) */
+    h += '<tr><td class="lbl-col lbl-sub">Ký nhận</td>';
+    for (let d = startDay; d <= endDay; d++) {
+      h += `<td class="ky-cell" id="ky${metric}-${d}-s"></td>`;
+      h += `<td class="ky-cell" id="ky${metric}-${d}-c"></td>`;
+    }
+    h += '</tr>';
+
+    /* Row 6: Ghi chú — 2 ô per ngày (S và C) */
+    h += '<tr><td class="lbl-col lbl-sub bold">Ghi chú</td>';
+    for (let d = startDay; d <= endDay; d++) {
+      h += `<td class="gc-cell" id="gc${metric}-${d}-s"></td>`;
+      h += `<td class="gc-cell" id="gc${metric}-${d}-c"></td>`;
+    }
+    h += '</tr></tbody></table>';
+
+    return h;
+  }
+
+  /* ============================================================
+     XÂY DỰNG 4 BẢNG
+  ============================================================ */
+  function buildAllTables() {
+    document.getElementById('nd-1-16').innerHTML  = buildTableHtml(1,  1, 16);
+    document.getElementById('nd-17-31').innerHTML = buildTableHtml(1, 17, 31);
+    document.getElementById('da-1-16').innerHTML  = buildTableHtml(2,  1, 16);
+    document.getElementById('da-17-31').innerHTML = buildTableHtml(2, 17, 31);
+  }
+
+  /* ============================================================
+     KHỞI ĐỘNG — Tải data song song
+  ============================================================ */
+  async function khoiDong() {
+    buildAllTables();
+    const selTB = document.getElementById('sel-thietbi');
+    selTB.innerHTML = '<option value="">⏳ Đang tải dữ liệu...</option>';
+    document.getElementById('sel-thangnam').innerHTML = '<option value="">-- Chọn thiết bị trước --</option>';
+    allNhietDo = [];
+    allThietBi = [];
+
+    try {
+      const [resND, resTB] = await Promise.all([
+        fetch(BASE_URL + '?type=nhietdo'),
+        fetch(BASE_URL + '?type=thietbi')
+      ]);
+      const jsonND = await resND.json();
+      const jsonTB = await resTB.json();
+      if (Array.isArray(jsonND)) allNhietDo = jsonND;
+      if (Array.isArray(jsonTB)) allThietBi = jsonTB;
+
+      /* Unique ten_thiet_bi_theo_doi */
+      const setTen = [...new Set(
+        allNhietDo.map(r => String(r.ten_thiet_bi_theo_doi || '').trim()).filter(Boolean)
+      )].sort();
+
+      selTB.innerHTML = `<option value="">-- Chọn thiết bị (${setTen.length}) --</option>`;
+      setTen.forEach(ten => {
+        selTB.innerHTML += `<option value="${esc(ten)}">${esc(ten)}</option>`;
+      });
+
+    } catch (err) {
+      selTB.innerHTML = `<option value="">❌ Lỗi: ${err.message}</option>`;
+    }
+  }
+
+  /* ============================================================
+     KHI CHỌN THIẾT BỊ
+     → Populate dropdown Tháng/Năm chỉ với những tháng có data
+  ============================================================ */
+  function onChonTB() {
+    const tenTB = document.getElementById('sel-thietbi').value;
+    const selTN = document.getElementById('sel-thangnam');
+
+    if (!tenTB) {
+      selTN.innerHTML = '<option value="">-- Chọn thiết bị trước --</option>';
+      return;
+    }
+
+    /* Lọc records của TB */
+    const forTB = allNhietDo.filter(
+      r => String(r.ten_thiet_bi_theo_doi || '').trim() === tenTB
+    );
+
+    /* Unique thang_nam (raw string "Tháng 8 năm 2025") */
+    const setTN = [...new Set(
+      forTB.map(r => String(r.thang_nam || '').trim()).filter(Boolean)
+    )];
+
+    /* Sort mới nhất trước */
+    setTN.sort((a, b) => {
+      const pa = parseTN(a), pb = parseTN(b);
+      if (!pa || !pb) return 0;
+      return pb.nam !== pa.nam ? pb.nam - pa.nam : pb.thang - pa.thang;
+    });
+
+    if (setTN.length === 0) {
+      selTN.innerHTML = '<option value="">Không có data cho thiết bị này</option>';
+    } else {
+      selTN.innerHTML = `<option value="">-- Chọn Tháng/Năm (${setTN.length} tháng có data) --</option>`;
+      setTN.forEach(tn => {
+        selTN.innerHTML += `<option value="${esc(tn)}">${esc(tn)}</option>`;
+      });
+      selTN.value = setTN[0]; /* Auto-chọn mới nhất */
+    }
+
+    /* Cập nhật tên phòng */
+    document.getElementById('info-phong').textContent = tenTB;
+
+    /* Tìm thông tin giới hạn từ DANH_MUC_TB */
+    const tbInfo = allThietBi.find(tb => {
+      const a = String(tb.ten_thiet_bi_va_vi_tri || tb.ten_thiet_bi || '').toLowerCase();
+      return a.includes(tenTB.toLowerCase()) || tenTB.toLowerCase().includes(a);
+    });
+
+    if (tbInfo) {
+      if (tbInfo.min_1 || tbInfo.max_1)
+        document.getElementById('ipt-khoang-nd').value = `${tbInfo.min_1 || '...'}°C - ${tbInfo.max_1 || '...'}°C`;
+      if (tbInfo.ma_so_thiet_bi) {
+        document.getElementById('ipt-ma-nd').value = tbInfo.ma_so_thiet_bi;
+        document.getElementById('ipt-ma-da').value = tbInfo.ma_so_thiet_bi;
+      }
+      if (tbInfo.min_2 || tbInfo.max_2) {
+        const dvt = tbInfo.dvt_2 || '%';
+        document.getElementById('ipt-khoang-da').value = `${tbInfo.min_2 || '...'}${dvt} - ${tbInfo.max_2 || '...'}${dvt}`;
+      }
+    }
+  }
+
+  /* ============================================================
+     PARSE "Tháng M năm Y" → { thang, nam }
+  ============================================================ */
+  function parseTN(str) {
+    const m = String(str).match(/[Tt]h[aáà]ng\s+(\d+)\s+[Nn][aă]m\s+(\d+)/);
+    if (!m) return null;
+    return { thang: parseInt(m[1]), nam: parseInt(m[2]) };
+  }
+
+  /* ============================================================
+     PARSE ngay_theo_doi
+     Hỗ trợ:
+       "15/08/2025"          → 15  (code.gs mới, DD/MM/YYYY)
+       "2025-08-14T17:00:00Z" → 15  (code.gs cũ ISO, GMT+7 timezone-safe)
+       "15"                  → 15  (số nguyên)
+     BUG TIMEZONE: KHÔNG dùng substring(8,10) với ISO vì:
+       Ngày 15/08/2025 GMT+7 = "2025-08-14T17:00:00.000Z" → substring → 14 (SAI!)
+       Phải dùng new Date(s).getDate() → trả về ngày theo local timezone → 15 (ĐÚNG)
+  ============================================================ */
+  function parseNgay(val) {
+    if (val === undefined || val === null || val === '') return null;
+    const s = String(val).trim();
+
+    /* Kiểu DD/MM/YYYY hoặc D/M/YYYY (code.gs mới) */
+    if (s.match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+      const d = parseInt(s.split('/')[0]);
+      return (!isNaN(d) && d >= 1 && d <= 31) ? d : null;
+    }
+
+    /* ISO format ("2025-08-14T17:00:00.000Z") → dùng Date để đúng timezone local */
+    if (s.includes('T') || s.match(/^\d{4}-\d{2}-\d{2}/)) {
+      const dateObj = new Date(s);
+      if (!isNaN(dateObj.getTime())) {
+        const d = dateObj.getDate(); // getDate() = theo múi giờ local (GMT+7)
+        return (d >= 1 && d <= 31) ? d : null;
+      }
+    }
+
+    /* Số nguyên thuần */
+    const d = parseInt(s);
+    return (!isNaN(d) && d >= 1 && d <= 31) ? d : null;
+  }
+
+  /* ============================================================
+     LẤY HỌ TÊN CUỐI (lastName)
+     VD: "Lê Hữu Tú" → "Tú"
+         "Nguyễn Thị Lan" → "Lan"
+  ============================================================ */
+  function lastName(fullName) {
+    const s = String(fullName || '').trim();
+    if (!s) return '';
+    const parts = s.split(/\s+/);
+    return parts[parts.length - 1];
+  }
+
+  /* ============================================================
+     XEM PHIẾU
+  ============================================================ */
+  function xemPhieu() {
+    const tenTB = document.getElementById('sel-thietbi').value;
+    const tnVal = document.getElementById('sel-thangnam').value;   /* "Tháng 8 năm 2025" */
+
+    if (!tenTB) { alert('Vui lòng chọn thiết bị!'); return; }
+    if (!tnVal) { alert('Vui lòng chọn Tháng/Năm!'); return; }
+
+    const parsed = parseTN(tnVal);
+    if (!parsed) { alert('Không đọc được Tháng/Năm: ' + tnVal); return; }
+    const { thang, nam } = parsed;
+
+    const soNgay = new Date(nam, thang, 0).getDate();
+
+    /* Cập nhật header */
+    document.getElementById('info-phong').textContent = tenTB;
+    document.querySelectorAll('.sp-thang').forEach(el => el.textContent = String(thang).padStart(2, '0'));
+    document.querySelectorAll('.sp-nam').forEach(el => el.textContent = nam);
+
+    /* Xoá ô cũ */
+    document.querySelectorAll('.data-cell, .ky-cell, .gc-cell').forEach(td => {
+      td.textContent = '';
+      td.className = td.className.replace(' out-of-range', '');
+    });
+
+    /* Lọc data theo TB + tháng/năm */
+    const filtered = allNhietDo.filter(r =>
+      String(r.ten_thiet_bi_theo_doi || '').trim() === tenTB &&
+      String(r.thang_nam || '').trim() === tnVal
+    );
+
+    /* === DEBUG: xem data trước khi map === */
+    console.group(`[Phiếu] ${tenTB} - ${tnVal}`);
+    console.log('Tổng records thỏa lọc:', filtered.length);
+    if (filtered.length > 0) {
+      const sample = filtered[0];
+      console.log('Mẫu record đầu tiên:');
+      console.log('  ngay_theo_doi:', sample.ngay_theo_doi, '→ parseNgay:', parseNgay(sample.ngay_theo_doi));
+      console.log('  buoi:', JSON.stringify(sample.buoi));
+      console.log('  ket_qua_1:', sample.ket_qua_1);
+      console.log('  ket_qua_2:', sample.ket_qua_2);
+      console.log('  nguoi_theo_doi:', sample.nguoi_theo_doi, '→ lastName:', lastName(sample.nguoi_theo_doi));
+    }
+    console.groupEnd();
+
+    let mapped = 0;
+
+    /* Map từng bản ghi vào bảng */
+    filtered.forEach(item => {
+      /* ─── Parse ngày từ ngay_theo_doi (H) ─── */
+      const ngay = parseNgay(item.ngay_theo_doi);
+      if (!ngay || ngay < 1 || ngay > soNgay) return;
+
+      /* ─── Buổi từ buoi (G): "Sáng" → cột S | "Chiều" → cột C ─── */
+      const buoiRaw = String(item.buoi || '').trim();
+      const isSang  = buoiRaw === 'Sáng' || buoiRaw === 'sáng' ||
+                      buoiRaw === 'Sang'  || buoiRaw === 'sang'  || buoiRaw === '1';
+      const sfx     = isSang ? 's' : 'c';
+
+      /* ─── ket_qua_1 (L = row[11]) → Nhiệt độ, metric 1 ─── */
+      const cellND = document.getElementById(`c1-${ngay}-${sfx}`);
+      if (cellND) {
+        const v = item.ket_qua_1;
+        if (v !== undefined && v !== null && v !== '') {
+          cellND.textContent = v;
+          mapped++;
+        }
+      }
+
+      /* ─── ket_qua_2 (M = row[12]) → Độ ẩm, metric 2 ─── */
+      const cellDA = document.getElementById(`c2-${ngay}-${sfx}`);
+      if (cellDA) {
+        const v = item.ket_qua_2;
+        if (v !== undefined && v !== null && v !== '') {
+          cellDA.textContent = v;
+        }
+      }
+
+      /* ─── Ký nhận: lấy tên cuối của nguoi_theo_doi (S = row[18]) ─── */
+      const tenCuoi = lastName(item.nguoi_theo_doi);
+      if (tenCuoi) {
+        [1, 2].forEach(m => {
+          const kyEl = document.getElementById(`ky${m}-${ngay}-${sfx}`);
+          if (kyEl) kyEl.textContent = tenCuoi;
+        });
+      }
+
+      /* ─── Ghi chú (Z = row[25]) ─── */
+      const ghiChu = String(item.ghi_chu || '').trim();
+      if (ghiChu) {
+        [1, 2].forEach(m => {
+          const gcEl = document.getElementById(`gc${m}-${ngay}-${sfx}`);
+          if (gcEl) gcEl.textContent = ghiChu;
+        });
+      }
+    });
+
+    console.log(`[Phiếu] Đã map ${mapped} ô kết quả vào bảng.`);
+
+    if (filtered.length === 0) {
+      alert(`Không có dữ liệu cho "${tenTB}" - ${tnVal}.`);
+    }
+  }
+
+  /* ============================================================
+     IN PHIẾU — @page margin-box footer
+  ============================================================ */
+  function inPhieu() {
+    let styleEl = document.getElementById('print-page-style');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'print-page-style';
+      document.head.appendChild(styleEl);
+    }
+    const f1 = document.getElementById('footer-1').innerText.replace(/"/g, "'");
+    const f2 = document.getElementById('footer-2').innerText.replace(/"/g, "'");
+    const f3 = document.getElementById('footer-3').innerText.replace(/"/g, "'");
+    styleEl.textContent = `
+      @page {
+        size: A4 landscape; margin: 0.6cm;
+        @bottom-left   { content:"${f1}"; font-family:"Times New Roman",serif; font-size:9px; border-top:0.5px solid #999; padding-top:2px; vertical-align:top; }
+        @bottom-center { content:"${f2}"; font-family:"Times New Roman",serif; font-size:9px; border-top:0.5px solid #999; padding-top:2px; vertical-align:top; }
+        @bottom-right  { content:"${f3}"; font-family:"Times New Roman",serif; font-size:9px; border-top:0.5px solid #999; padding-top:2px; vertical-align:top; }
+      }`;
+    window.print();
+  }
+
+  /* ============================================================
+     XUẤT WORD (.doc)
+  ============================================================ */
+  function xuatWord() {
+    const contentEl = document.getElementById('phieu-container');
+    if (!contentEl) return;
+    const f1 = document.getElementById('footer-1').innerText;
+    const f2 = document.getElementById('footer-2').innerText;
+    const f3 = document.getElementById('footer-3').innerText;
+
+    const clone = contentEl.cloneNode(true);
+    const df = clone.querySelector('.doc-footer');
+    if (df) df.remove();
+
+    clone.querySelectorAll('input').forEach(inp => {
+      const span = document.createElement('span');
+      span.textContent = inp.value;
+      inp.replaceWith(span);
+    });
+
+    clone.querySelectorAll('table').forEach(t => { t.style.borderCollapse = 'collapse'; t.style.width = '100%'; });
+    clone.querySelectorAll('td, th').forEach(c => { c.style.border = '1px solid black'; c.style.padding = '1px 2px'; c.style.fontSize = '7px'; });
+
+    const rawHtml = clone.innerHTML;
+    const tnVal  = document.getElementById('sel-thangnam').value || '';
+    const fName  = `Phieu_NhietDo_DoAm_${tnVal.replace(/\s+/g, '_')}`;
+
+    const tpl = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<style>
+  @page WordSection1 { size:841.9pt 595.3pt; mso-page-orientation:landscape; margin:36pt 40pt 46pt 40pt; mso-footer:f1; }
+  div.WordSection1 { page: WordSection1; }
+  body { font-family:"Times New Roman",serif; font-size:7.5px; }
+</style>
+</head>
+<body>
+  <div class="WordSection1">${rawHtml}</div>
+  <div style="mso-element:footer" id="f1">
+    <table width="100%" style="width:100%;border:none;border-top:0.5pt solid #999;">
+      <tr>
+        <td style="border:none;text-align:left;font-size:9px;">${f1}</td>
+        <td style="border:none;text-align:center;font-size:9px;">${f2}</td>
+        <td style="border:none;text-align:right;font-size:9px;">${f3}</td>
+      </tr>
+    </table>
+  </div>
+</body></html>`;
+
+    const blob = new Blob(['\ufeff', tpl], { type: 'application/msword;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = fName + '.doc';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /* ============================================================
+     UTILITY
+  ============================================================ */
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ============================================================
+     STARTUP
+  ============================================================ */
+  khoiDong();
+
+</script>
+</body>
+</html>
